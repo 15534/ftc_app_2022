@@ -14,15 +14,15 @@ public class MRI_Range_Linear extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        ModernRoboticsI2cRangeSensor RANGE1 = hardwareMap.get(ModernRoboticsI2cRangeSensor.class,"range1");
+        ModernRoboticsI2cRangeSensor RANGE2 = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "range2");
 
         waitForStart();
 
         while (opModeIsActive()) {
-            telemetry.addData("Ultra Sonic", RANGE1.rawUltrasonic());
-            telemetry.addData("Raw Optical", RANGE1.rawOptical());
-            telemetry.addData("Cm Optical", RANGE1.cmOptical());
-            telemetry.addData("Distance in cm", "%.2f cm", RANGE1.getDistance(DistanceUnit.CM));
+            telemetry.addData("Ultra Sonic", RANGE2.rawUltrasonic());
+            telemetry.addData("Raw Optical", RANGE2.rawOptical());
+            telemetry.addData("Cm Optical", RANGE2.cmOptical());
+            telemetry.addData("Distance in cm", "%.2f cm", RANGE2.getDistance(DistanceUnit.CM));
             telemetry.update();
         }
     }
