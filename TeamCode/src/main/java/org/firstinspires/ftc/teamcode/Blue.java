@@ -15,7 +15,7 @@ public class Blue extends LinearOpMode {
     LinearOpMode op;
     ElapsedTime runtime = new ElapsedTime();
 
-    public static final double COUNTS_PER_MOTOR_REV = 537.7;
+    public static final double COUNTS_PER_MOTOR_REV = 537.7*4;
     public static final double WHEEL_DIAMETER_INCHES = 3.78;
     public static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV)/(WHEEL_DIAMETER_INCHES * Math.PI);
 
@@ -57,9 +57,9 @@ public class Blue extends LinearOpMode {
             switch (currentState) {
                 case GO_TO_CAROUSEL:
                     fleft.setTargetPosition(fleft.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
-                    fright.setTargetPosition(fleft.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
-                    bleft.setTargetPosition(fleft.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
-                    bright.setTargetPosition(fleft.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
+                    fright.setTargetPosition(fright.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
+                    bleft.setTargetPosition(bleft.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
+                    bright.setTargetPosition(bright.getCurrentPosition()- (int) (20*COUNTS_PER_INCH));
                     setRuntoPositionMode();
                     next(State.TURN_CAROUSEL);
                     break;
@@ -71,9 +71,9 @@ public class Blue extends LinearOpMode {
                     break;
                 case PARK:
                     fleft.setTargetPosition(fleft.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
-                    fright.setTargetPosition(fleft.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
-                    bleft.setTargetPosition(fleft.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
-                    bright.setTargetPosition(fleft.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
+                    fright.setTargetPosition(fright.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
+                    bleft.setTargetPosition(bleft.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
+                    bright.setTargetPosition(bright.getCurrentPosition()+(int)(100*COUNTS_PER_INCH));
                     setRuntoPositionMode();
                     next(State.IDLE);
             }
