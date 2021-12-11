@@ -16,6 +16,7 @@ public class MRI_Range_Linear extends LinearOpMode {
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+
         Servo fl = hardwareMap.get(Servo.class, "frontleft");
         // limits: 0.98 & 0
         Servo br = hardwareMap.get(Servo.class, "backright");
@@ -24,6 +25,7 @@ public class MRI_Range_Linear extends LinearOpMode {
         // limits: 0.0175 & 1
         Servo bl = hardwareMap.get(Servo.class, "backleft");
         // limits: 0.034 & 1
+
         // tank is whole numbers
         boolean isMecLeft = true;
         boolean isMecRight = true;
@@ -31,7 +33,7 @@ public class MRI_Range_Linear extends LinearOpMode {
         bl.setPosition(0.034);
         fr.setPosition(0.0175);
         br.setPosition(0.98);
-        double scaler =1.0;
+        double scaler = 1.0;
         DcMotor fleft = hardwareMap.get(DcMotor.class, "front_left");
         DcMotor fright = hardwareMap.get(DcMotor.class, "front_right");
         DcMotor bleft = hardwareMap.get(DcMotor.class, "rear_left");
@@ -71,7 +73,6 @@ public class MRI_Range_Linear extends LinearOpMode {
                     bright.setPower(turns[3]*scaler);
                 }
             }
-
              */
 
             if(gamepad1.right_trigger>0.6){
@@ -205,9 +206,6 @@ public class MRI_Range_Linear extends LinearOpMode {
             fright.setPower(turns[1]*scaler);
             bleft.setPower(turns[2]*scaler);
             bright.setPower(turns[3]*scaler);
-
-
-
         }
     }
     public static double[] turn(double contturn, double x, double y){
