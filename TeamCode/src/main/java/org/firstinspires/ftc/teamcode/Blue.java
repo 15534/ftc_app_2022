@@ -97,4 +97,4 @@ public class Blue extends LinearOpMode {
         scale=Math.max(scale,1);
         return new double[]{fleft/scale,fright/scale,bleft/scale,bright/scale};
     }
-}
+} 
