@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "Blue")
-public class Blue extends LinearOpMode {
+@Autonomous(name = "Red")
+public class Red extends LinearOpMode {
 
 
     @Override
@@ -51,7 +51,7 @@ public class Blue extends LinearOpMode {
             double start = getRuntime();
 
             while (getRuntime()-start<0.7){
-                double[] turns = turn(0,1,0);
+                double[] turns = turn(0,-1,0);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
                 bleft.setPower(turns[2]);
@@ -97,4 +97,4 @@ public class Blue extends LinearOpMode {
         scale=Math.max(scale,1);
         return new double[]{fleft/scale,fright/scale,bleft/scale,bright/scale};
     }
-} 
+}
