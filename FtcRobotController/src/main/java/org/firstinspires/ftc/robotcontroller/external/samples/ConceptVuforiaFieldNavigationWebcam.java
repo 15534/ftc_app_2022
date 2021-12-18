@@ -137,7 +137,7 @@ public class ConceptVuforiaFieldNavigationWebcam extends LinearOpMode {
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        targets = this.vuforia.loadTrackablesFromFile("/sdcard/FIRST/vision/FreightFrenzy");
+        targets = this.vuforia.loadTrackablesFromAsset("FreightFrenzy");
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
         List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();

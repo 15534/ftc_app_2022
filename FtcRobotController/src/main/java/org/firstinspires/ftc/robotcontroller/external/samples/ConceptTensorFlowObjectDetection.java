@@ -63,7 +63,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
    *  FreightFrenzy_BC.tflite  0: Ball,  1: Cube
    *  FreightFrenzy_DM.tflite  0: Duck,  1: Marker
    */
-    private static final String TFOD_MODEL_ASSET = "/sdcard/FIRST/vision/FreightFrenzy_BCDM.tflite"; //For OpenRC, loaded from internal storage to reduce APK size
+    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
       "Ball",
       "Cube",
@@ -181,6 +181,6 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
         tfodParameters.isModelTensorFlow2 = true;
         tfodParameters.inputSize = 320;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromFile(TFOD_MODEL_ASSET, LABELS);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     }
 }
