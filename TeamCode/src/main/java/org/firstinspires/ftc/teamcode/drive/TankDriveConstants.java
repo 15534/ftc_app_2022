@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * and op modes themselves.
  */
 @Config
-public class DriveConstants {
+public class TankDriveConstants {
 
     /*
      * These are motor constants that should be listed online for your motors.
@@ -34,7 +34,7 @@ public class DriveConstants {
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(8, 0, 0,13.532983853708998);
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(8, 0, 3,13.78142979101814);
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -86,7 +86,7 @@ public class DriveConstants {
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
 
      */
-    public static double MAX_VEL = 49.7941548156896;
+    public static double MAX_VEL = 48.10484766886932;
     public static double MAX_ACCEL = 52.48180821614297;
     public static double MAX_ANG_VEL = Math.toRadians(33.74084763191785);
     public static double MAX_ANG_ACCEL = Math.toRadians(184.02607784577722);

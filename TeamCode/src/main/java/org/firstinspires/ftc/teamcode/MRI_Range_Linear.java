@@ -52,30 +52,30 @@ public class MRI_Range_Linear extends LinearOpMode {
                 meow--;
             }
             carosell.setPower(0.6*meow);
-            /*
-            if(gamepad1.left_trigger>0.6){
-                if(isMecLeft){
+           /*
+           if(gamepad2.left_trigger>0.6){
+               if(isMecLeft){
 
-                    isMecLeft=false;
-                }else{
-                    fl.setPosition(0.98);
-                    bl.setPosition(0.034);
-                    isMecLeft=true;
-                }
-                while (gamepad1.left_trigger>0.6){
-                    double turn =gamepad1.right_stick_x;
-                    double x = gamepad1.left_stick_x;
-                    double y = gamepad1.left_stick_y;
-                    double[] turns = turn(turn,x,y);
-                    fleft.setPower(turns[0]*scaler);
-                    fright.setPower(turns[1]*scaler);
-                    bleft.setPower(turns[2]*scaler);
-                    bright.setPower(turns[3]*scaler);
-                }
-            }
-             */
+                   isMecLeft=false;
+               }else{
+                   fl.setPosition(0.98);
+                   bl.setPosition(0.034);
+                   isMecLeft=true;
+               }
+               while (gamepad2.left_trigger>0.6){
+                   double turn =gamepad2.right_stick_x;
+                   double x = gamepad2.left_stick_x;
+                   double y = gamepad2.left_stick_y;
+                   double[] turns = turn(turn,x,y);
+                   fleft.setPower(turns[0]*scaler);
+                   fright.setPower(turns[1]*scaler);
+                   bleft.setPower(turns[2]*scaler);
+                   bright.setPower(turns[3]*scaler);
+               }
+           }
+            */
 
-            if(gamepad1.right_trigger>0.6){
+            if(gamepad2.right_trigger>0.6){
                 if(isMecRight){
                     fr.setPosition(1);
                     br.setPosition(0);
@@ -89,13 +89,13 @@ public class MRI_Range_Linear extends LinearOpMode {
                     bl.setPosition(0.034);
                     isMecRight=true;
                 }
-                while (gamepad1.right_trigger>0.6){
-                    double turn =gamepad1.right_stick_x;
-                    double x = gamepad1.left_stick_x;
+                while (gamepad2.right_trigger>0.6){
+                    double turn =gamepad2.right_stick_x;
+                    double x = gamepad2.left_stick_x;
                     if(!isMecRight){
                         x=0;
                     }
-                    double y = gamepad1.left_stick_y;
+                    double y = gamepad2.left_stick_y;
                     double[] turns = turn(turn,x,y);
                     fleft.setPower(turns[0]*scaler);
                     fright.setPower(turns[1]*scaler);
@@ -104,15 +104,15 @@ public class MRI_Range_Linear extends LinearOpMode {
                 }
             }
 
-            if (gamepad1.a) {
+            if (gamepad2.a) {
                 scaler=Math.max(0.2, scaler-0.2);
-                while (gamepad1.a) {
-                    double turn =gamepad1.right_stick_x;
-                    double x = gamepad1.left_stick_x;
+                while (gamepad2.a) {
+                    double turn =gamepad2.right_stick_x;
+                    double x = gamepad2.left_stick_x;
                     if(!isMecRight){
                         x=0;
                     }
-                    double y = gamepad1.left_stick_y;
+                    double y = gamepad2.left_stick_y;
                     double[] turns = turn(turn,x,y);
                     fleft.setPower(turns[0]*scaler);
                     fright.setPower(turns[1]*scaler);
@@ -120,15 +120,15 @@ public class MRI_Range_Linear extends LinearOpMode {
                     bright.setPower(turns[3]*scaler);
                 }
             }
-            if (gamepad1.b) {
+            if (gamepad2.b) {
                 scaler=Math.min(1, scaler+0.2);
-                while (gamepad1.b) {
-                    double turn =gamepad1.right_stick_x;
-                    double x = gamepad1.left_stick_x;
+                while (gamepad2.b) {
+                    double turn =gamepad2.right_stick_x;
+                    double x = gamepad2.left_stick_x;
                     if(!isMecRight){
                         x=0;
                     }
-                    double y = gamepad1.left_stick_y;
+                    double y = gamepad2.left_stick_y;
                     double[] turns = turn(turn,x,y);
                     fleft.setPower(turns[0]*scaler);
                     fright.setPower(turns[1]*scaler);
@@ -136,15 +136,15 @@ public class MRI_Range_Linear extends LinearOpMode {
                     bright.setPower(turns[3]*scaler);
                 }
             }
-            if (gamepad1.x) {
+            if (gamepad2.x) {
                 scaler=1;
-                while (gamepad1.x) {
-                    double turn =gamepad1.right_stick_x;
-                    double x = gamepad1.left_stick_x;
+                while (gamepad2.x) {
+                    double turn =gamepad2.right_stick_x;
+                    double x = gamepad2.left_stick_x;
                     if(!isMecRight){
                         x=0;
                     }
-                    double y = gamepad1.left_stick_y;
+                    double y = gamepad2.left_stick_y;
                     double[] turns = turn(turn,x,y);
                     fleft.setPower(turns[0]*scaler);
                     fright.setPower(turns[1]*scaler);
@@ -152,42 +152,42 @@ public class MRI_Range_Linear extends LinearOpMode {
                     bright.setPower(turns[3]*scaler);
                 }
             }
-            while (gamepad1.dpad_up){
+            while (gamepad2.dpad_up){
                 double[] turns = turn(0,0,-0.4);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
                 bleft.setPower(turns[2]);
                 bright.setPower(turns[3]);
             }
-            while (gamepad1.dpad_down){
+            while (gamepad2.dpad_down){
                 double[] turns = turn(0,0,0.4);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
                 bleft.setPower(turns[2]);
                 bright.setPower(turns[3]);
             }
-            while (gamepad1.dpad_right&&isMecRight){
+            while (gamepad2.dpad_right&&isMecRight){
                 double[] turns = turn(0,0.52,0);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
                 bleft.setPower(turns[2]);
                 bright.setPower(turns[3]);
             }
-            while (gamepad1.dpad_left&&isMecRight){
+            while (gamepad2.dpad_left&&isMecRight){
                 double[] turns = turn(0,-0.52,0);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
                 bleft.setPower(turns[2]);
                 bright.setPower(turns[3]);
             }
-            while (gamepad1.left_bumper){
+            while (gamepad2.left_bumper){
                 double[] turns = turn(-0.4,0,0);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
                 bleft.setPower(turns[2]);
                 bright.setPower(turns[3]);
             }
-            while (gamepad1.right_bumper){
+            while (gamepad2.right_bumper){
                 double[] turns = turn(0.4,0,0);
                 fleft.setPower(turns[0]);
                 fright.setPower(turns[1]);
@@ -195,12 +195,12 @@ public class MRI_Range_Linear extends LinearOpMode {
                 bright.setPower(turns[3]);
             }
 
-            double turn =gamepad1.right_stick_x;
-            double x = gamepad1.left_stick_x;
+            double turn =gamepad2.right_stick_x;
+            double x = gamepad2.left_stick_x;
             if(!isMecRight){
                 x=0;
             }
-            double y = gamepad1.left_stick_y;
+            double y = gamepad2.left_stick_y;
             double[] turns = turn(turn,x,y);
             fleft.setPower(turns[0]*scaler);
             fright.setPower(turns[1]*scaler);
@@ -220,3 +220,4 @@ public class MRI_Range_Linear extends LinearOpMode {
         return new double[]{fleft/scale,fright/scale,bleft/scale,bright/scale};
     }
 }
+
