@@ -7,10 +7,11 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
-import org.firstinspires.ftc.teamcode.drive.TankDriveConstants;
+import org.firstinspires.ftc.teamcode.drive.MecanumDriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 /*
@@ -50,7 +51,12 @@ public class TrackWidthTuner extends LinearOpMode {
         telemetry.update();
 
         MovingStatistics trackWidthStats = new MovingStatistics(NUM_TRIALS);
+        VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
+
         for (int i = 0; i < NUM_TRIALS; i++) {
+            telemetry.addData("Voltage", voltageSensor.getVoltage());
+            telemetry.update();
+
             drive.setPoseEstimate(new Pose2d());
 
             // it is important to handle heading wraparounds
@@ -67,7 +73,7 @@ public class TrackWidthTuner extends LinearOpMode {
                 drive.update();
             }
 
-            double trackWidth = TankDriveConstants.TRACK_WIDTH * Math.toRadians(ANGLE) / headingAccumulator;
+            double trackWidth = MecanumDriveConstants.TRACK_WIDTH * Math.toRadians(ANGLE) / headingAccumulator;
             trackWidthStats.add(trackWidth);
 
             sleep(DELAY);

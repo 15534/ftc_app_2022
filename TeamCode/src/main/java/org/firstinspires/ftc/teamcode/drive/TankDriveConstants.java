@@ -34,7 +34,7 @@ public class TankDriveConstants {
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(8, 0, 3,13.78142979101814);
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(12, 0, 12,15);
 
     /*
      * These are physical constants that can be determined from your robot (including the track
