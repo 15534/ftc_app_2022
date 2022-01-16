@@ -42,3 +42,4 @@ public class TrajectorySequence {
         return sequenceList.size();
     }
 }
+
