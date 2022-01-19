@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -8,7 +9,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @TeleOp(name = "Limit Test")
+@Config
 public class LimitTest extends LinearOpMode {
+    public static double servoPower = 0.08;
+
     @Override
     public void runOpMode() throws InterruptedException {
         DcMotorEx motor = hardwareMap.get(DcMotorEx.class, "intake");
@@ -29,17 +33,17 @@ public class LimitTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            //s.setPosition(0.76);
+            s.setPosition(servoPower);
             //fl.setPosition(0.0);
 
             //motor2.setVelocity(1000);
-            motor.setPower(0.1);
+//            motor.setPower(0.1);
+//
+//            if (motor.getCurrentPosition() == -330) {
+//                motor.setPower(0.0);
+//            }
 
-            if (motor.getCurrentPosition() == -330) {
-                motor.setPower(0.0);
-            }
-
-            telemetry.addData("position",motor.getCurrentPosition());
+            //telemetry.addData("position",motor.getCurrentPosition());
             telemetry.addData("position",s.getPosition());
             telemetry.update();
         }

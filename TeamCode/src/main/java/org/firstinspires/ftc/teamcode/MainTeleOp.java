@@ -36,6 +36,11 @@ public class MainTeleOp extends LinearOpMode {
     public static double BUMPER_ROTATION_SPEED = 0.35;
     public static double ROTATION_MULTIPLIER = 2.05;
 
+    boolean isMec = true;
+    double mecDown = 0.08;
+    double intakeUp = 0.8;
+    double tankDown = 0.15;
+
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -57,6 +62,17 @@ public class MainTeleOp extends LinearOpMode {
         GamepadEx gp1 = new GamepadEx(gamepad1);
         GamepadEx gp2 = new GamepadEx(gamepad2);
 
+        Servo intake = hardwareMap.get(Servo.class, "intake");
+        Servo fl = hardwareMap.get(Servo.class, "frontleft");
+        // limits: 0.98 & 0
+        Servo br = hardwareMap.get(Servo.class, "backright");
+        // limits: 0.98 & 0
+        Servo fr = hardwareMap.get(Servo.class, "frontright");
+        // limits: 0.0175 & 1
+        Servo bl = hardwareMap.get(Servo.class, "backleft");
+        // limits: 0.034 & 1
+        waitForStart();
+
         waitForStart();
         while (!isStopRequested()) {
             drive.update();
@@ -71,7 +87,7 @@ public class MainTeleOp extends LinearOpMode {
             motor.setPower(gamepad1.right_stick_y * 0.5);
 
             Vector2d translation = new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x);
-            double rotation = -ROTATION_MULTIPLIER*gamepad1.right_stick_x;
+            double rotation = -ROTATION_MULTIPLIER * gamepad1.right_stick_x;
 
             // slow translation with dpad
             if (gamepad1.dpad_up) {
@@ -93,6 +109,40 @@ public class MainTeleOp extends LinearOpMode {
 
             drive.setWeightedDrivePower(new Pose2d(translation, rotation));
             telemetry.update();
+
+            if (gamepad2.right_stick_y < -0.3 && !isMec) {
+                intake.setPosition(tankDown);
+            } else if (gamepad2.right_stick_y < -0.3 && isMec) {
+                intake.setPosition(mecDown);
+            } else if (gamepad2.right_stick_y > 0.3) {
+                intake.setPosition(intakeUp);
+            }
+
+            if (gamepad2.right_trigger > 0.6) {
+                //mecanum is higher so down position is lower
+                //tank is lower so down position is higher
+                if (isMec) { //change from mecanum to tank
+                    isMec = false;
+                    intake.setPosition(intakeUp);
+                    wait(700);
+                    fl.setPosition(0);
+                    bl.setPosition(1);
+                    fr.setPosition(1);
+                    br.setPosition(0);
+                } else { //change from tank to mecanum
+                    isMec = true;
+                    fl.setPosition(0.98);
+                    bl.setPosition(0.034);
+                    fr.setPosition(0.0175);
+                    br.setPosition(0.98);
+                    wait(700);
+                    intake.setPosition(mecDown);
+                }
+
+                while (gamepad2.right_trigger > 0.6) {
+
+                }
+            }
         }
     }
 }
