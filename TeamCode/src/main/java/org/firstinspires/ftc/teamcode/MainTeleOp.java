@@ -1,6 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -22,6 +26,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp")
 public class MainTeleOp extends LinearOpMode {
+    DcMotorEx motor;
+
+    public static double kP = -0.001; //-0.000065
+    public static double kI = 0;
+    public static double kD = 0;
+
     public static double DPAD_SPEED = 0.35;
     public static double BUMPER_ROTATION_SPEED = 0.35;
     public static double ROTATION_MULTIPLIER = 2.05;
@@ -30,6 +40,17 @@ public class MainTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        motor = hardwareMap.get(DcMotorEx.class, "intake");
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        motor.setDirection(DcMotor.Direction.REVERSE);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
+        PIDFController controller = new PIDFController(coeffs, 0, 0, 0);
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -42,10 +63,12 @@ public class MainTeleOp extends LinearOpMode {
             Pose2d poseEstimate = drive.getPoseEstimate();
             PoseStorage.currentPose = poseEstimate;
 
-            telemetry.addData("mode", currentMode);
+            //telemetry.addData("mode", currentMode);
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+
+            motor.setPower(gamepad1.right_stick_y * 0.5);
 
             Vector2d translation = new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x);
             double rotation = -ROTATION_MULTIPLIER*gamepad1.right_stick_x;
