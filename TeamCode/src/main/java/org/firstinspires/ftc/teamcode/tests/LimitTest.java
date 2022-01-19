@@ -11,9 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class LimitTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor motor = hardwareMap.get(DcMotor.class, "intake");
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motor.setDirection(DcMotor.Direction.FORWARD);
+        DcMotorEx motor = hardwareMap.get(DcMotorEx.class, "intake");
+        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motor.setDirection(DcMotor.Direction.REVERSE);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Servo s = hardwareMap.get(Servo.class, "stick");
@@ -29,12 +29,17 @@ public class LimitTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            s.setPosition(0.76);
-            fl.setPosition(0.0);
+            //s.setPosition(0.76);
+            //fl.setPosition(0.0);
 
             //motor2.setVelocity(1000);
+            motor.setPower(0.1);
 
-            //telemetry.addData("position",motor.g etCurrentPosition());
+            if (motor.getCurrentPosition() == -330) {
+                motor.setPower(0.0);
+            }
+
+            telemetry.addData("position",motor.getCurrentPosition());
             telemetry.addData("position",s.getPosition());
             telemetry.update();
         }
