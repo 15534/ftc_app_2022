@@ -48,10 +48,10 @@ public class MainTeleOp extends LinearOpMode {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        motor = hardwareMap.get(DcMotorEx.class, "intake");
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motor.setDirection(DcMotor.Direction.REVERSE);
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        motor = hardwareMap.get(DcMotorEx.class, "intake");
+//        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        motor.setDirection(DcMotor.Direction.REVERSE);
+//        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
         PIDFController controller = new PIDFController(coeffs, 0, 0, 0);
@@ -84,7 +84,7 @@ public class MainTeleOp extends LinearOpMode {
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
 
-            motor.setPower(gamepad1.right_stick_y * 0.5);
+            //motor.setPower(gamepad1.right_stick_y * 0.5);
 
             Vector2d translation = new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x);
             double rotation = -ROTATION_MULTIPLIER * gamepad1.right_stick_x;
