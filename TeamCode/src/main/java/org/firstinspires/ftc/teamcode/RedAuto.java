@@ -26,10 +26,10 @@ public class RedAuto extends LinearOpMode {
     LinearOpMode op;
 
     Pose2d startingPosition = new Pose2d(-33, -63, Math.toRadians(0));
-    Pose2d shippingHubPose = new Pose2d(5, -30, Math.toRadians(0));
+    Pose2d shippingHubPose = new Pose2d(5, -30, Math.toRadians(-20));
     Vector2d storageUnitPose = new Vector2d(-48, -36);
     Pose2d carouselPos = new Pose2d(-55, -63, Math.toRadians(60));
-    Vector2d wareHousePos = new Vector2d(48, -48);
+    Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
 
     Servo fl = hardwareMap.get(Servo.class, "frontleft");
@@ -85,7 +85,7 @@ public class RedAuto extends LinearOpMode {
                 .build();
 
         goToFreightFromShippingHub = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
-                .lineTo(new Vector2d(wareHousePos.getX(), wareHousePos.getY()))
+                .splineToSplineHeading(wareHousePos, Math.toRadians(0))
                 .build();
 
         goToSwitchingPosFromFreight = tankDrive.trajectoryBuilder(goToFreightFromShippingHub.end())
@@ -154,72 +154,72 @@ public class RedAuto extends LinearOpMode {
                         next(State.SWITCH_TO_TANK);
                     }
                     break;
-//                case SWITCH_TO_TANK:
-//                    if (!mecanumDrive.isBusy()) {
-//                       switchFromMecToTank();
-//                       next(State.DRIVE_TO_FREIGHT);
-//                    }
-//                    break;
-//                case DRIVE_TO_FREIGHT:
-//                    if (!tankDrive.isBusy()) {
-//                        tankDrive.followTrajectoryAsync(goToFreightFromShippingHub);
-//                        next(State.PICK_UP_FREIGHT);
-//                    }
-//                    break;
-//                case PICK_UP_FREIGHT:
-//                    if (!tankDrive.isBusy()) {
-//                        //TODO has code to pick up the freight
-//                        next(State.TURN_AT_FREIGHT);
-//                    }
-//                    break;
-//                case TURN_AT_FREIGHT:
-//                    if (!tankDrive.isBusy()) {
-//                        double dX = Math.abs(storageUnitPose.getX() - wareHousePos.getX());
-//                        double dY = Math.abs(storageUnitPose.getY() - wareHousePos.getY());
-//                        double heading = Math.atan(dY / -dX);
-//                        mecanumDrive.turnAsync(heading);
-//                        next(State.GO_TO_SWITCHING_POS);
-//                    }
-//                    break;
-//                case GO_TO_SWITCHING_POS:
-//                    if (!tankDrive.isBusy()) {
-//                        tankDrive.followTrajectoryAsync(goToSwitchingPosFromFreight);
-//                        switchFromTankToMec();
-//                        next(State.GO_TO_STORAGE_UNIT);
-//                    }
-//                    break;
-//                case GO_TO_STORAGE_UNIT:
-//                    if (!mecanumDrive.isBusy()) {
-//                        mecanumDrive.followTrajectoryAsync(goToStorageUnitFromSwitchingPos);
-//                        next(State.OUTTAKE_FREIGHT);
-//                    }
-//                    break;
-//                case OUTTAKE_FREIGHT:
-//                    if (!mecanumDrive.isBusy()) {
-//                       //TODO Outtake the freight
-//                        next(State.GO_TO_SWITCHING_POS_2);
-//                    }
-//                    break;
-//                case GO_TO_SWITCHING_POS_2:
-//                    if (!mecanumDrive.isBusy()) {
-//                        mecanumDrive.followTrajectoryAsync(goToSwitchingPosFromFreight);
-//                        switchFromMecToTank();
-//                        next(State.DRIVE_TO_FREIGHT_2);
-//                    }
-//                    break;
-//                case DRIVE_TO_FREIGHT_2:
-//                    if (!mecanumDrive.isBusy()) {
-//                        mecanumDrive.followTrajectoryAsync(goToFreightFromShippingHub);
-//                        switchFromMecToTank();
-//                        turnsLeft--;
-//                        if (turnsLeft > 0) {
-//                            next(State.GO_TO_SWITCHING_POS);
-//                        }
-//                        else {
-//                            next(State.IDLE);
-//                        }
-//                    }
-//                    break;
+                case SWITCH_TO_TANK:
+                    if (!mecanumDrive.isBusy()) {
+                       switchFromMecToTank();
+                       next(State.DRIVE_TO_FREIGHT);
+                    }
+                    break;
+                case DRIVE_TO_FREIGHT:
+                    if (!tankDrive.isBusy()) {
+                        tankDrive.followTrajectoryAsync(goToFreightFromShippingHub);
+                        next(State.PICK_UP_FREIGHT);
+                    }
+                    break;
+                case PICK_UP_FREIGHT:
+                    if (!tankDrive.isBusy()) {
+                        //TODO has code to pick up the freight
+                        next(State.TURN_AT_FREIGHT);
+                    }
+                    break;
+                case TURN_AT_FREIGHT:
+                    if (!tankDrive.isBusy()) {
+                        double dX = Math.abs(storageUnitPose.getX() - wareHousePos.getX());
+                        double dY = Math.abs(storageUnitPose.getY() - wareHousePos.getY());
+                        double heading = Math.atan(dY / -dX);
+                        mecanumDrive.turnAsync(heading);
+                        next(State.GO_TO_SWITCHING_POS);
+                    }
+                    break;
+                case GO_TO_SWITCHING_POS:
+                    if (!tankDrive.isBusy()) {
+                        tankDrive.followTrajectoryAsync(goToSwitchingPosFromFreight);
+                        switchFromTankToMec();
+                        next(State.GO_TO_STORAGE_UNIT);
+                    }
+                    break;
+                case GO_TO_STORAGE_UNIT:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.followTrajectoryAsync(goToStorageUnitFromSwitchingPos);
+                        next(State.OUTTAKE_FREIGHT);
+                    }
+                    break;
+                case OUTTAKE_FREIGHT:
+                    if (!mecanumDrive.isBusy()) {
+                       //TODO Outtake the freight
+                        next(State.GO_TO_SWITCHING_POS_2);
+                    }
+                    break;
+                case GO_TO_SWITCHING_POS_2:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.followTrajectoryAsync(goToSwitchingPosFromFreight);
+                        switchFromMecToTank();
+                        next(State.DRIVE_TO_FREIGHT_2);
+                    }
+                    break;
+                case DRIVE_TO_FREIGHT_2:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.followTrajectoryAsync(goToFreightFromShippingHub);
+                        switchFromMecToTank();
+                        turnsLeft--;
+                        if (turnsLeft > 0) {
+                            next(State.GO_TO_SWITCHING_POS);
+                        }
+                        else {
+                            next(State.IDLE);
+                        }
+                    }
+                    break;
             }
             telemetry.addLine("out of loop");
             // Read pose
