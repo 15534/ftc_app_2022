@@ -16,7 +16,7 @@ public class BlueAutonSimulation {
     static Pose2d shippingHubPose = new Pose2d(5, 30, Math.toRadians(20));
     static Vector2d storageUnitPose = new Vector2d(-48, 36);
     static Pose2d carouselPos = new Pose2d(-55, 63, Math.toRadians(-60));
-    static Pose2d wareHousePos = new Pose2d(48, 48, Math.toRadians(0));
+    static Vector2d wareHousePos = new Vector2d(36, 60);
     static Vector2d switchingPos = new Vector2d(0, 48);
 
     public static void main(String[] args) {
@@ -30,7 +30,9 @@ public class BlueAutonSimulation {
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(carouselPos)
                                 .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
-                                .splineToSplineHeading(wareHousePos, Math.toRadians(0))
+                                .lineTo(wareHousePos)
+                                .turn(Math.toRadians(-20))
+                                .lineTo(new Vector2d(wareHousePos.getX() + 12, wareHousePos.getY()))
                                 .lineTo(new Vector2d(switchingPos.getX(), switchingPos.getY()))
                                 .lineTo(new Vector2d(storageUnitPose.getX(), storageUnitPose.getY()))
                                 .build()

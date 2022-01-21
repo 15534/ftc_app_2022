@@ -19,7 +19,6 @@ public class RedAutonSimulation {
     static Vector2d storageUnitPose = new Vector2d(-48, -36);
     static Pose2d carouselPos = new Pose2d(-55, -63, Math.toRadians(60));
     static Vector2d wareHousePos = new Vector2d(36, -60);
-
     static Vector2d switchingPos = new Vector2d(0, -48);
 
     public static void main(String[] args) {
