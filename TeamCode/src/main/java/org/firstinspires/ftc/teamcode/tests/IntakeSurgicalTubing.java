@@ -32,7 +32,7 @@ public class IntakeSurgicalTubing extends LinearOpMode {
     public static double outtakeDownPosition = 0;
 
     public static double intakeExtensionLowerLimit = -27;
-    public static double intakeExtensionUpperLimit = 300;
+    public static double intakeExtensionUpperLimit = 270;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -110,11 +110,11 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                 // intake extends
                 if (intakeExtension.getCurrentPosition() >=intakeExtensionLowerLimit) {
                     int f = intakeExtension.getCurrentPosition()-(int)intakeExtensionLowerLimit;
-                    scale = 1/1.6 * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
+                    scale = 1/1.8 * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
                             * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1);
 
-                    power = 1/1.6 * (gamepad2.left_stick_y * (0.12*(Math.sin((Math.PI / intakeExtensionUpperLimit) * f)
-                            * Math.exp(Math.PI*f/intakeExtensionUpperLimit))+0.1));
+                    power = 1/1.8 * (gamepad2.left_stick_y * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
+                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1));
 
                     intakeExtension.setPower(power);
                 }else{
