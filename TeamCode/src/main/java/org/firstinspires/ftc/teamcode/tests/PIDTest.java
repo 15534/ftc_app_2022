@@ -18,7 +18,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class PIDTest extends LinearOpMode {
     DcMotorEx motor;
 
-    double integralSum = 0;
+    //public static double speed = 1;
+
     public static double kP = -0.025;
     public static double kI = 0;
     public static double kD = -0.001;
@@ -27,6 +28,7 @@ public class PIDTest extends LinearOpMode {
     public static double kG = 0.25;
 
     ElapsedTime timer = new ElapsedTime();
+
     private double lastError = 0;
 
     int[] mecPositions = new int[]{70, 180, 330};
@@ -39,7 +41,9 @@ public class PIDTest extends LinearOpMode {
         motor = hardwareMap.get(DcMotorEx.class, "intake");
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motor.setDirection(DcMotor.Direction.REVERSE);
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setVelocity(1000);
+        //motor.setVelocity(speed);
 
         PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
         PIDFController controller = new PIDFController(coeffs, 0, 0, 0, (x, v) -> kG);
@@ -49,14 +53,9 @@ public class PIDTest extends LinearOpMode {
         while(opModeIsActive()) {
             controller.setTargetPosition(targetPosition);
             double correction = controller.update(motor.getCurrentPosition());
-            telemetry.addData("correction", correction);
             motor.setPower(correction);
 
-//            motor.setPower(kG);
-
-//          double power = PIDControl(mecPositions[0], motor.getCurrentPosition());
-//          motor.setPower(power);
-//          telemetry.addData("power", power);
+            telemetry.addData("correction", correction);
             telemetry.addData("correction100", 100 * correction);
             telemetry.addData("position", motor.getCurrentPosition());
             telemetry.update();
