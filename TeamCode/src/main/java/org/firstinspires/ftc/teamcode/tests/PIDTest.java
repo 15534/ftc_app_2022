@@ -25,6 +25,9 @@ public class PIDTest extends LinearOpMode {
     public static double kD = -0.001;
 
     public static double targetPosition = -140;
+    public static double kV = 0;
+    public static double kA = 0;
+    public static double kStatic = 0;
     public static double kG = 0.25;
 
     ElapsedTime timer = new ElapsedTime();
@@ -41,12 +44,12 @@ public class PIDTest extends LinearOpMode {
         motor = hardwareMap.get(DcMotorEx.class, "intake");
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         motor.setDirection(DcMotor.Direction.REVERSE);
-        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motor.setVelocity(1000);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        motor.setVelocity(1000);
         //motor.setVelocity(speed);
 
         PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
-        PIDFController controller = new PIDFController(coeffs, 0, 0, 0, (x, v) -> kG);
+        PIDFController controller = new PIDFController(coeffs, kV, kA, kStatic, (x, v) -> kG);
 
         waitForStart();
 
