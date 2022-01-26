@@ -22,11 +22,11 @@ public class LiftRunToPositionTest extends LinearOpMode {
     // our DC motor.
     DcMotorEx motorExLeft;
 
-    public static final double NEW_P = -10;
-    public static final double NEW_I = -3;
+    public static final double NEW_P = 10;
+    public static final double NEW_I = 3;
     public static final double NEW_D = 0;
     public static final double NEW_F = 0.0;
-    public static int targetPosition = 140;
+    public static int targetPosition = 180;
     public static double power = 0.5;
 
     public void runOpMode() {
@@ -38,15 +38,15 @@ public class LiftRunToPositionTest extends LinearOpMode {
         // wait for start command.
         waitForStart();
 
-        // get the PID coefficients for the RUN_USING_ENCODER  modes.
-        PIDFCoefficients pidOrig = motorExLeft.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        // change coefficients using methods included with DcMotorEx class.
-        PIDFCoefficients pidNew = new PIDFCoefficients(NEW_P, NEW_I, NEW_D, NEW_F);
-        motorExLeft.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
-
-        // re-read coefficients and verify change.
-        PIDFCoefficients pidModified = motorExLeft.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+//        // get the PID coefficients for the RUN_USING_ENCODER  modes.
+//        PIDFCoefficients pidOrig = motorExLeft.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//        // change coefficients using methods included with DcMotorEx class.
+//        PIDFCoefficients pidNew = new PIDFCoefficients(NEW_P, NEW_I, NEW_D, NEW_F);
+//        motorExLeft.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
+//
+//        // re-read coefficients and verify change.
+//        PIDFCoefficients pidModified = motorExLeft.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
 
         motorExLeft.setTargetPosition(targetPosition);
         motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -55,10 +55,10 @@ public class LiftRunToPositionTest extends LinearOpMode {
         // display info to user.
         while(opModeIsActive()) {
             telemetry.addData("Runtime", "%.03f", getRuntime());
-            telemetry.addData("P,I,D (orig)", "%.04f, %.04f, %.0f",
-                    pidOrig.p, pidOrig.i, pidOrig.d);
-            telemetry.addData("P,I,D (modified)", "%.04f, %.04f, %.04f",
-                    pidModified.p, pidModified.i, pidModified.d);
+//            telemetry.addData("P,I,D (orig)", "%.04f, %.04f, %.0f",
+//                    pidOrig.p, pidOrig.i, pidOrig.d);
+//            telemetry.addData("P,I,D (modified)", "%.04f, %.04f, %.04f",
+//                    pidModified.p, pidModified.i, pidModified.d);
             telemetry.addData("position", motorExLeft.getCurrentPosition());
             telemetry.update();
         }

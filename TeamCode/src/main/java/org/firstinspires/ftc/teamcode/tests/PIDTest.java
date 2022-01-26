@@ -36,6 +36,14 @@ public class PIDTest extends LinearOpMode {
 
     int[] mecPositions = new int[]{70, 180, 330};
 
+    /*
+
+
+    Use LiftRunToPositionTest.java. This class has old code!
+
+
+     */
+
     @Override
     public void runOpMode() throws InterruptedException {
         FtcDashboard dashboard = FtcDashboard.getInstance();
