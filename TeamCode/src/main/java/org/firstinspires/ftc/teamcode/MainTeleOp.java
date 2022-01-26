@@ -124,7 +124,7 @@ public class MainTeleOp extends LinearOpMode {
                 if (isMec) { //change from mecanum to tank
                     isMec = false;
                     intake.setPosition(intakeUp);
-                    wait(700);
+                    runtime.wait(700);
                     fl.setPosition(0);
                     bl.setPosition(1);
                     fr.setPosition(1);
@@ -135,7 +135,7 @@ public class MainTeleOp extends LinearOpMode {
                     bl.setPosition(0.034);
                     fr.setPosition(0.0175);
                     br.setPosition(0.98);
-                    wait(700);
+                    runtime.wait(700);
                     intake.setPosition(mecDown);
                 }
 
