@@ -16,26 +16,25 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Config
 public class IntakeSurgicalTubing extends LinearOpMode {
 
-    DcMotorEx intakeSurgical, intakeExtension, outtake;
+    DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft;
     Servo intakePosition;
 
     double mecDown = 0.08;
     double intakeUp = 0.8;
     double tankDown = 0.15;
 
-    public static double kP = -0.025;
-    public static double kI = 0;
-    public static double kD = -0.001;
-    public static double kG = 0.25;
+    public static int outtakeTargetPosition = 180;
+    public static int outtakeDownPosition = 0;
+    public static double outtakePower = 0.5;
 
-    public static double thirdOuttakePosition = -330;
-    public static double outtakeDownPosition = 0;
-
-    public static double intakeExtensionLowerLimit = -27;
+    public static double intakeExtensionLowerLimit = -30;
     public static double intakeExtensionUpperLimit = 270;
+    public static double intakePower = 0.5;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        motorExLeft = (DcMotorEx)hardwareMap.get(DcMotor.class, "intake");
+
         intakeSurgical = hardwareMap.get(DcMotorEx.class, "intakeSurgical");
         intakeSurgical.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intakeSurgical.setDirection(DcMotor.Direction.FORWARD);
@@ -48,14 +47,13 @@ public class IntakeSurgicalTubing extends LinearOpMode {
         outtake.setDirection(DcMotor.Direction.REVERSE);
         outtake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
         intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
         intakeExtension.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         intakeExtension.setDirection(DcMotor.Direction.REVERSE);
         intakeExtension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
-        PIDFController controller = new PIDFController(coeffs, 0, 0, 0, (x, v) -> kG);
+        //PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
+        //PIDFController controller = new PIDFController(coeffs, 0, 0, 0, (x, v) -> kG);
 
         intakePosition = hardwareMap.get(Servo.class, "intakeLift");
 
@@ -63,7 +61,8 @@ public class IntakeSurgicalTubing extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         waitForStart();
-        intakeExtensionLowerLimit=-60;//intakeExtension.getCurrentPosition();
+        intakeExtensionUpperLimit = intakeExtension.getCurrentPosition();
+        intakeExtensionUpperLimit = intakeExtensionUpperLimit + 250;
 
         while (!isStopRequested()) {
             // surgical tubing
@@ -96,48 +95,50 @@ public class IntakeSurgicalTubing extends LinearOpMode {
             // intake extension motor
             if (gamepad2.left_stick_y > 0.1) {
                 // intake should come back up
-                if (intakeExtension.getCurrentPosition() <= intakeExtensionUpperLimit ){
-                    int f = intakeExtension.getCurrentPosition();
-                    power = 1/2*(gamepad2.left_stick_y *(0.12*(Math.sin((Math.PI / intakeExtensionUpperLimit) * f)
-                            * Math.exp(Math.PI*f/intakeExtensionUpperLimit))+0.1));
-                    scale = 1/2*(0.12*(Math.sin((Math.PI / intakeExtensionUpperLimit) * f)
-                            * Math.exp(Math.PI*f/intakeExtensionUpperLimit))+0.1);
-                    intakeExtension.setPower(power);
-                }else{
+                if (intakeExtension.getCurrentPosition() >= intakeExtensionLowerLimit) {
+//                    int f = intakeExtension.getCurrentPosition();
+//                    power = 1/2*(gamepad2.left_stick_y *(0.12*(Math.sin((Math.PI / intakeExtensionUpperLimit) * f)
+//                            * Math.exp(Math.PI*f/intakeExtensionUpperLimit))+0.1));
+//                    scale = 1/2*(0.12*(Math.sin((Math.PI / intakeExtensionUpperLimit) * f)
+//                            * Math.exp(Math.PI*f/intakeExtensionUpperLimit))+0.1);
+                    intakeExtension.setPower(-1 * intakePower);
+                } else {
                     intakeExtension.setPower(0.0);
                 }
-            }else if (gamepad2.left_stick_y < -0.1) {
+            } else if (gamepad2.left_stick_y < -0.1) {
                 // intake extends
-                if (intakeExtension.getCurrentPosition() >=intakeExtensionLowerLimit) {
-                    int f = intakeExtension.getCurrentPosition()-(int)intakeExtensionLowerLimit;
-                    scale = 1/1.8 * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
-                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1);
-
-                    power = 1/1.8 * (gamepad2.left_stick_y * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
-                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1));
-
-                    intakeExtension.setPower(power);
-                }else{
+                if (intakeExtension.getCurrentPosition() <= intakeExtensionUpperLimit) {
+//                    int f = intakeExtension.getCurrentPosition()-(int)intakeExtensionLowerLimit;
+//                    scale = 1/1.8 * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
+//                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1);
+//
+//                    power = 1/1.8 * (gamepad2.left_stick_y * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
+//                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1));
+                    intakeExtension.setPower(intakePower);
+                } else {
                     intakeExtension.setPower(0.0);
                 }
-            }else{
+            } else {
                 intakeExtension.setPower(0.0);
             }
-            telemetry.addData("power: ", power);
-            telemetry.addData("scale", scale);
+
+            //telemetry.addData("power: ", power);
+            //telemetry.addData("scale", scale);
+            telemetry.addData("joystick input: ", gamepad2.left_stick_y);
+            telemetry.addData("motor power: ", intakeExtension.getPower());
             telemetry.addData("intakExtension: ", intakeExtension.getCurrentPosition());
 
             // outtake - don't use until outtake pidf is tuned
             if (gamepad2.dpad_up) {
-                controller.setTargetPosition(thirdOuttakePosition);
-                double correction = controller.update(outtake.getCurrentPosition());
-                outtake.setPower(correction);
+                motorExLeft.setTargetPosition(outtakeTargetPosition);
+                motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorExLeft.setPower(outtakePower);
             }
 
             if (gamepad2.dpad_down) {
-                controller.setTargetPosition(outtakeDownPosition);
-                double correction = controller.update(outtake.getCurrentPosition());
-                outtake.setPower(correction);
+                motorExLeft.setTargetPosition(outtakeDownPosition);
+                motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorExLeft.setPower(outtakePower);
             }
 
             if (gamepad2.left_stick_y > 0.0) {
