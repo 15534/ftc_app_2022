@@ -18,15 +18,18 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class IntakeSurgicalTubing extends LinearOpMode {
 
     DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft;
-    Servo intakePosition;
+    Servo intakePosition, outtakeServo;
 
     double mecDown = 0.08;
     double intakeUp = 0.8;
     double tankDown = 0.15;
 
-    public static int outtakeTargetPosition = 180;
+    public static int outtakeThirdLevelPosition = -330;
+    public static int outtakeFirstLevelPosition = -90;
     public static int outtakeDownPosition = 0;
     public static double outtakePower = 0.5;
+    public static double outtakeServoClosePosition = 0.9;
+    public static double outtakeServoOpenPosition = 0.8;
 
     public static double intakeExtensionLowerLimit = -30;
     public static double intakeExtensionUpperLimit = 270;
@@ -37,6 +40,7 @@ public class IntakeSurgicalTubing extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         motorExLeft = (DcMotorEx)hardwareMap.get(DcMotor.class, "intake");
+        outtakeServo = hardwareMap.get(Servo.class, "outtake servo");
 
         intakeSurgical = hardwareMap.get(DcMotorEx.class, "intakeSurgical");
         intakeSurgical.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -63,9 +67,14 @@ public class IntakeSurgicalTubing extends LinearOpMode {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        waitForStart();
+        // init robot
         intakeExtensionLowerLimit = intakeExtension.getCurrentPosition();
         intakeExtensionUpperLimit = intakeExtensionLowerLimit + 270;
+        intakePosition.setPosition(intakeUp);
+        motorExLeft.setTargetPosition(outtakeDownPosition);
+        outtakeServo.setPosition(outtakeServoClosePosition);
+
+        waitForStart();
 
         while (!isStopRequested()) {
             telemetry.addData("upper limit: ", intakeExtensionUpperLimit);
@@ -98,8 +107,6 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                 intakePosition.setPosition(intakeUp); // general servo up position
             }
 
-
-
             //double function = 0.1;
             //if(pos>0){
               //  pos+=intakeExtension.getPower()*20;
@@ -114,6 +121,7 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                 if (intakeExtension.getCurrentPosition() >= intakeExtensionLowerLimit) {
                     power = 1/1.5 *(gamepad2.left_stick_y * (function));
                     scale = 1/1.5 *function;
+                    intakeExtension.setTargetPosition((int) intakeExtensionLowerLimit);
                     intakeExtension.setPower(-power);
                 } else {
                     intakeExtension.setPower(0.0);
@@ -133,24 +141,28 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                 intakeExtension.setPower(0.0);
             }
 
-            //telemetry.addData("power: ", power);
-            //telemetry.addData("scale", scale);
-            telemetry.addData("proposed intake power: ", power);
-            telemetry.addData("proposed intake scaling factor: ", scale);
-            telemetry.addData("joystick input: ", gamepad2.left_stick_y);
-            telemetry.addData("intakExtension: ", intakeExtension.getCurrentPosition());
-
-            // outtake - don't use until outtake pidf is tuned
             if (gamepad2.dpad_up) {
-                motorExLeft.setTargetPosition(outtakeTargetPosition);
+                motorExLeft.setTargetPosition(outtakeThirdLevelPosition);
                 motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motorExLeft.setPower(outtakePower);
+            }
+
+            if (gamepad2.dpad_left) {
+                motorExLeft.setTargetPosition(outtakeFirstLevelPosition);
+                motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorExLeft.setPower(outtakePower);
+            }
+
+            if (gamepad2.dpad_right) {
+                outtakeServo.setPosition(outtakeServoOpenPosition);
             }
 
             if (gamepad2.dpad_down) {
                 motorExLeft.setTargetPosition(outtakeDownPosition);
                 motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motorExLeft.setPower(outtakePower);
+
+                outtakeServo.setPosition(outtakeServoClosePosition);
             }
 
             // dpad left - tier 1
@@ -164,6 +176,14 @@ public class IntakeSurgicalTubing extends LinearOpMode {
 //                    intakeExtension.setPower(gamepad2.left_stick_y);
 //                }
 //            }
+
+            //telemetry.addData("power: ", power);
+            //telemetry.addData("scale", scale);
+            telemetry.addData("proposed intake power: ", power);
+            telemetry.addData("proposed intake scaling factor: ", scale);
+            telemetry.addData("joystick input: ", gamepad2.left_stick_y);
+            telemetry.addData("intakExtension: ", intakeExtension.getCurrentPosition());
+            telemetry.addData("outtake position: ", motorExLeft.getCurrentPosition());
             telemetry.update();
         }
     }
