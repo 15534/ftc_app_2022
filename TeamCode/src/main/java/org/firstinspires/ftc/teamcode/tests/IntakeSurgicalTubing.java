@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "IntakeSurgicalTubing")
@@ -30,6 +31,8 @@ public class IntakeSurgicalTubing extends LinearOpMode {
     public static double intakeExtensionLowerLimit = -30;
     public static double intakeExtensionUpperLimit = 270;
     public static double intakePower = 0.6;
+
+    public static double leftStickPos = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -95,36 +98,25 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                 intakePosition.setPosition(intakeUp); // general servo up position
             }
 
+            int pos = intakeExtension.getCurrentPosition() - (int) intakeExtensionLowerLimit;
+            double function = Math.max((0.12 * (Math.sin((Math.PI / 250) * pos) * Math.exp(Math.PI * pos / 250))), 0.175);
+
             // intake extension motor
             if (gamepad2.left_stick_y > 0.1) {
                 // intake should come back up
                 if (intakeExtension.getCurrentPosition() >= intakeExtensionLowerLimit) {
-                    int f = intakeExtension.getCurrentPosition();
-                    power = 1/2*(gamepad2.left_stick_y *(0.12*(Math.sin((Math.PI / intakeExtension.getCurrentPosition()) * f)
-                            * Math.exp(Math.PI*f/intakeExtension.getCurrentPosition()))+0.1));
-                    scale = 1/2*(0.12*(Math.sin((Math.PI / intakeExtension.getCurrentPosition()) * f)
-                            * Math.exp(Math.PI*f/intakeExtension.getCurrentPosition()))+0.1);
-                    intakeExtension.setPower(power);
-
-                    telemetry.addData("proposed intake retraction power: ", power);
-                    telemetry.addData("proposed intake retraction scaling factor: ", scale);
-                    telemetry.addData("motor power: ", intakeExtension.getPower());
+                    power = (gamepad2.left_stick_y * (function));
+                    scale = function;
+                    intakeExtension.setPower(-power);
                 } else {
                     intakeExtension.setPower(0.0);
                 }
             } else if (gamepad2.left_stick_y < -0.1) {
                 // intake extends
                 if (intakeExtension.getCurrentPosition() <= intakeExtensionUpperLimit) {
-                    int f = intakeExtension.getCurrentPosition()-(int)intakeExtensionLowerLimit;
-                    scale = 1/1.8 * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
-                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1);
-                    power = 1/1.8 * (gamepad2.left_stick_y * (0.12*(Math.sin((Math.PI / (intakeExtensionUpperLimit-intakeExtensionLowerLimit)) * f)
-                            * Math.exp(Math.PI*f/(intakeExtensionUpperLimit-intakeExtensionLowerLimit)))+0.1));
+                    power = 1/1.5 * (gamepad2.left_stick_y * (function));
+                    scale = 1/1.5 * (function);
                     intakeExtension.setPower(-power);
-
-                    telemetry.addData("proposed intake extension power: ", power);
-                    telemetry.addData("proposed intake extension scaling factor: ", scale);
-                    telemetry.addData("motor power: ", intakeExtension.getPower());
                 } else {
                     intakeExtension.setPower(0.0);
                 }
@@ -134,8 +126,9 @@ public class IntakeSurgicalTubing extends LinearOpMode {
 
             //telemetry.addData("power: ", power);
             //telemetry.addData("scale", scale);
+            telemetry.addData("proposed intake power: ", power);
+            telemetry.addData("proposed intake scaling factor: ", scale);
             telemetry.addData("joystick input: ", gamepad2.left_stick_y);
-
             telemetry.addData("intakExtension: ", intakeExtension.getCurrentPosition());
 
             // outtake - don't use until outtake pidf is tuned
