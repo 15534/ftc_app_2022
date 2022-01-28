@@ -65,7 +65,7 @@ public class IntakeSurgicalTubing extends LinearOpMode {
 
         waitForStart();
         intakeExtensionLowerLimit = intakeExtension.getCurrentPosition();
-        intakeExtensionUpperLimit = intakeExtensionLowerLimit + 250;
+        intakeExtensionUpperLimit = intakeExtensionLowerLimit + 270;
 
         while (!isStopRequested()) {
             telemetry.addData("upper limit: ", intakeExtensionUpperLimit);
@@ -98,20 +98,29 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                 intakePosition.setPosition(intakeUp); // general servo up position
             }
 
-            int pos = intakeExtension.getCurrentPosition() - (int) intakeExtensionLowerLimit;
-            double function = Math.max((0.12 * (Math.sin((Math.PI / 250) * pos) * Math.exp(Math.PI * pos / 250))), 0.175);
+
+
+            //double function = 0.1;
+            //if(pos>0){
+              //  pos+=intakeExtension.getPower()*20;
+                //function = Math.max(4.9*Math.sqrt(pos/300.0)*Math.exp(-1.0*pos/50.0),0.1);
+            //}
 
             // intake extension motor
             if (gamepad2.left_stick_y > 0.1) {
+                int pos = intakeExtension.getCurrentPosition() - (int) intakeExtensionLowerLimit;
+                double function = Math.max((0.12 * (Math.sin((Math.PI / 270) * pos) * Math.exp(Math.PI * pos / 270))), 0.12);
                 // intake should come back up
                 if (intakeExtension.getCurrentPosition() >= intakeExtensionLowerLimit) {
-                    power = (gamepad2.left_stick_y * (function));
-                    scale = function;
+                    power = 1/1.5 *(gamepad2.left_stick_y * (function));
+                    scale = 1/1.5 *function;
                     intakeExtension.setPower(-power);
                 } else {
                     intakeExtension.setPower(0.0);
                 }
             } else if (gamepad2.left_stick_y < -0.1) {
+                int pos = (int)intakeExtensionUpperLimit -intakeExtension.getCurrentPosition();
+                double function = Math.max((0.12 * (Math.sin((Math.PI / 270) * pos) * Math.exp(Math.PI * pos / 270))), 0.12);
                 // intake extends
                 if (intakeExtension.getCurrentPosition() <= intakeExtensionUpperLimit) {
                     power = 1/1.5 * (gamepad2.left_stick_y * (function));
