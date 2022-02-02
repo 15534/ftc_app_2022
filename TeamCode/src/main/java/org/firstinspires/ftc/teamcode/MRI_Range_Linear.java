@@ -24,15 +24,16 @@ public class MRI_Range_Linear extends LinearOpMode {
         Servo fr = hardwareMap.get(Servo.class, "frontright");
         // limits: 0.0175 & 1
         Servo bl = hardwareMap.get(Servo.class, "backleft");
+
+        br.setDirection(Servo.Direction.REVERSE);
+        bl.setDirection(Servo.Direction.REVERSE);
         // limits: 0.034 & 1
 
         // tank is whole numbers
         boolean isMecLeft = true;
         boolean isMecRight = true;
         fl.setPosition(0.98);
-        bl.setPosition(0.034);
-        fr.setPosition(0.0175);
-        br.setPosition(0.98);
+
         double scaler = 1.0;
         DcMotor fleft = hardwareMap.get(DcMotor.class, "front_left");
         DcMotor fright = hardwareMap.get(DcMotor.class, "front_right");
@@ -40,9 +41,11 @@ public class MRI_Range_Linear extends LinearOpMode {
         DcMotor bright = hardwareMap.get(DcMotor.class, "rear_right");
         DcMotor carosell = hardwareMap.get(DcMotor.class,"caro");
 
-
+        boolean ismechA=false;
+        boolean ismechB=false;
+        boolean ismechY=false;
+        boolean ismechX=false;
         waitForStart();
-
         while (opModeIsActive()) {
             double meow = 0;
             if(gamepad2.b){
@@ -52,7 +55,7 @@ public class MRI_Range_Linear extends LinearOpMode {
                 meow--;
             }
             carosell.setPower(0.6*meow);
-           /*
+
            if(gamepad2.left_trigger>0.6){
                if(isMecLeft){
 
@@ -73,7 +76,7 @@ public class MRI_Range_Linear extends LinearOpMode {
                    bright.setPower(turns[3]*scaler);
                }
            }
-            */
+
 
             if(gamepad2.right_trigger>0.6){
                 if(isMecRight){
@@ -207,6 +210,71 @@ public class MRI_Range_Linear extends LinearOpMode {
             bleft.setPower(turns[2]*scaler);
             bright.setPower(turns[3]*scaler);
         }
+
+
+
+        /*
+        while(opModeIsActive()){
+            telemetry.addData("a",ismechA);
+            telemetry.addData("b",ismechB);
+            telemetry.addData("x",ismechX);
+            telemetry.addData("y",ismechY);
+            telemetry.update();
+
+            if (gamepad1.a) {
+                if(!ismechA) {
+                    fl.setPosition(0.98);
+                    ismechA=true;
+                }else{
+                    fl.setPosition(0);
+                    ismechA=false;
+                }
+
+                while (gamepad1.a) {
+
+                }
+            }
+            if (gamepad1.b) {
+                if(!ismechB) {
+                    bl.setPosition(0.034);
+                    ismechB = true;
+                }else{
+                    bl.setPosition(1);
+                    ismechB=false;
+                }
+                while (gamepad1.b) {
+
+                }
+            }
+            if (gamepad1.y) {
+                if(!ismechY) {
+                    fr.setPosition(0.0175);
+                    ismechY=true;
+                }else{
+                    fr.setPosition(1);
+                    ismechY=false;
+                }
+                while (gamepad1.y) {
+
+                }
+            }
+            if (gamepad1.x) {
+                if(!ismechX){
+                    br.setPosition(0.98);
+                    ismechX=true;
+                }else{
+                    br.setPosition(0);
+                    ismechX=false;
+                }
+
+
+                while (gamepad1.x) {
+
+                }
+            }
+        }
+         */
+
     }
     public static double[] turn(double contturn, double x, double y){
         double ang = Math.atan2(y,x);

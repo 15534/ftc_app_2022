@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.util.ArrayList;
+
 @TeleOp(name = "IntakeSurgicalTubing")
 @Config
 public class IntakeSurgicalTubing extends LinearOpMode {
@@ -73,7 +75,9 @@ public class IntakeSurgicalTubing extends LinearOpMode {
         intakePosition.setPosition(intakeUp);
         motorExLeft.setTargetPosition(outtakeDownPosition);
         outtakeServo.setPosition(outtakeServoClosePosition);
-
+        double lastvaluefront = -1;
+        double lastvaluelast = -1;
+        int startpoint = 0;
         waitForStart();
 
         while (!isStopRequested()) {
@@ -114,12 +118,26 @@ public class IntakeSurgicalTubing extends LinearOpMode {
             //}
 
             // intake extension motor
+            if(!gamepad2.dpad_left&&!gamepad2.dpad_up){
             if (gamepad2.left_stick_y > 0.1) {
-                int pos = intakeExtension.getCurrentPosition() - (int) intakeExtensionLowerLimit;
-                double function = Math.max((0.12 * (Math.sin((Math.PI / 270) * pos) * Math.exp(Math.PI * pos / 270))), 0.12);
+                if(lastvaluefront==-1){
+                    startpoint = (int) intakeExtensionUpperLimit;
+                }else if(getRuntime()-lastvaluefront>0.1){
+                    startpoint=intakeExtension.getCurrentPosition();
+
+                }
+                lastvaluefront=getRuntime();
+                int pos =  intakeExtension.getCurrentPosition();
+                pos = startpoint-pos;
+                pos = startpoint+(int)intakeExtensionLowerLimit-pos;
+                double dist = Math.abs(startpoint-intakeExtensionLowerLimit);
+                double function = Math.max((0.12 * (Math.sin((Math.PI / dist) * pos) * Math.exp(Math.PI * pos / dist))), 0.2);
+                if(function>1.5){
+                    function=0.1;
+                }
                 // intake should come back up
                 if (intakeExtension.getCurrentPosition() >= intakeExtensionLowerLimit) {
-                    power = 1/1.5 *(gamepad2.left_stick_y * (function));
+                    power = 1/1.2 *(gamepad2.left_stick_y * (function));
                     scale = 1/1.5 *function;
                     intakeExtension.setTargetPosition((int) intakeExtensionLowerLimit);
                     intakeExtension.setPower(-power);
@@ -127,18 +145,46 @@ public class IntakeSurgicalTubing extends LinearOpMode {
                     intakeExtension.setPower(0.0);
                 }
             } else if (gamepad2.left_stick_y < -0.1) {
-                int pos = (int)intakeExtensionUpperLimit -intakeExtension.getCurrentPosition();
-                double function = Math.max((0.12 * (Math.sin((Math.PI / 270) * pos) * Math.exp(Math.PI * pos / 270))), 0.12);
+
+                if(lastvaluelast==-1){
+                    startpoint = (int) intakeExtensionLowerLimit;
+                }else if(getRuntime()-lastvaluelast>0.1){
+                    startpoint=intakeExtension.getCurrentPosition();
+
+                }
+                lastvaluelast=getRuntime();
+                int pos =intakeExtension.getCurrentPosition();
+                pos = pos-startpoint;
+
+                pos=startpoint+(int)intakeExtensionUpperLimit-pos;
+
+                double dist = Math.abs(startpoint-intakeExtensionUpperLimit);
+                double function = Math.max((0.12 * (Math.sin((Math.PI / dist) * pos) * Math.exp(Math.PI * pos / dist))), 0.2);
+                if(function>1.01){
+                    function=0.1;
+                }
                 // intake extends
+
                 if (intakeExtension.getCurrentPosition() <= intakeExtensionUpperLimit) {
-                    power = 1/1.5 * (gamepad2.left_stick_y * (function));
+                    power = 1/1.2 * (gamepad2.left_stick_y * (function));
                     scale = 1/1.5 * (function);
                     intakeExtension.setPower(-power);
                 } else {
                     intakeExtension.setPower(0.0);
                 }
             } else {
-                intakeExtension.setPower(0.0);
+                if(Math.abs(intakeExtension.getCurrentPosition()-intakeExtensionLowerLimit)<50.0){
+                    intakeExtension.setPower(-0.1);
+                }else{
+                    intakeExtension.setPower(0.0);
+                }
+
+            }}else{
+                if(Math.abs(intakeExtension.getCurrentPosition()-intakeExtensionLowerLimit)<50.0){
+                    intakeExtension.setPower(0.1);
+                }else{
+                    intakeExtension.setPower(0.0);
+                }
             }
 
             if (gamepad2.dpad_up) {

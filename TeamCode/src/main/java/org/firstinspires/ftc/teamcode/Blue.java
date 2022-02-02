@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "Blue")
+@TeleOp(name = "Blue")
 public class Blue extends LinearOpMode {
 
 
@@ -40,61 +40,88 @@ public class Blue extends LinearOpMode {
         DcMotor carosell = hardwareMap.get(DcMotor.class,"caro");
         ModernRoboticsI2cRangeSensor RANGE2 = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rangeee");
 
-        fl.setPosition(0.98);
-        bl.setPosition(0.034);
-        fr.setPosition(0.0175);
-        br.setPosition(0.98);
+        br.setDirection(Servo.Direction.FORWARD);
 
+        boolean ismechA=false;
+        boolean ismechB=false;
+        boolean ismechY=false;
+        boolean ismechX=false;
         waitForStart();
 
-        while (opModeIsActive()) {
-            double start = getRuntime();
+        while(opModeIsActive()){
+            telemetry.addData("a",ismechA);
+            telemetry.addData("b",ismechB);
+            telemetry.addData("x",ismechX);
+            telemetry.addData("y",ismechY);
+            telemetry.addData("pos",bl.getPosition());
+            telemetry.addData("port",bl.getPortNumber());
+            telemetry.update();
 
-            while (getRuntime()-start<0.7){
-                double[] turns = turn(0,1,0);
-                fleft.setPower(turns[0]);
-                fright.setPower(turns[1]);
-                bleft.setPower(turns[2]);
-                bright.setPower(turns[3]);
-            }
-            double[] turns2 = turn(0,0,0);
-            fleft.setPower(turns2[0]);
-            fright.setPower(turns2[1]);
-            bleft.setPower(turns2[2]);
-            bright.setPower(turns2[3]);
-            fl.setPosition(0);
-            bl.setPosition(1);
-            fr.setPosition(1);
-            br.setPosition(0);
-            while (true){
-                double[] turns = turn(0,0,-1);
-                fleft.setPower(turns[0]);
-                fright.setPower(turns[1]);
-                bleft.setPower(turns[2]);
-                bright.setPower(turns[3]);
-                while (RANGE2.getDistance(DistanceUnit.CM)<60.0){
-                    turns = turn(0,0,0.0);
-                    fleft.setPower(turns[0]);
-                    fright.setPower(turns[1]);
-                    bleft.setPower(turns[2]);
-                    bright.setPower(turns[3]);
+            if (gamepad1.a) {
+                if(!ismechA) {
+                    fl.setPosition(0.98);
+                    ismechA=true;
+                }else{
+                    fl.setPosition(0);
+                    ismechA=false;
                 }
-                telemetry.addData("Distance in cm", "%.2f cm", RANGE2.getDistance(DistanceUnit.CM));
-                telemetry.update();
 
+                while (gamepad1.a) {
+
+                }
+            }
+            if(gamepad1.right_bumper){
+                bl.setPosition(0.034);
+                while (gamepad1.right_bumper){
+
+                }
+            }
+            if(gamepad1.left_bumper){
+                bl.setPosition(1);
+                while (gamepad1.left_bumper){
+
+                }
             }
 
+            if (gamepad1.b) {
+                if(!ismechB) {
+                    bl.setPosition(0.034);
+                    ismechB = true;
+                }else{
+                    bl.setPosition(1);
+                    ismechB=false;
+                }
+                while (gamepad1.b) {
+
+                }
+            }
+            if (gamepad1.y) {
+                if(!ismechY) {
+                    fr.setPosition(0.0175);
+                    ismechY=true;
+                }else{
+                    fr.setPosition(1);
+                    ismechY=false;
+                }
+                while (gamepad1.y) {
+
+                }
+            }
+            if (gamepad1.x) {
+                if(!ismechX){
+                    br.setPosition(0.98);
+                    ismechX=true;
+                }else{
+                    br.setPosition(0);
+                    ismechX=false;
+                }
+
+
+                while (gamepad1.x) {
+
+                }
+            }
         }
     }
-    public static double[] turn(double contturn, double x, double y){
-        double ang = Math.atan2(y,x);
-        double magnitude = Math.sqrt(x*x+y*y);
-        double fleft = -1.0*(-1.0*Math.sin(ang+Math.PI*0.25)*magnitude+contturn);
-        double bright = -1.0*fleft-2.0*contturn;
-        double bleft = -1.0*(-1.0*Math.sin(ang-Math.PI*0.25)*magnitude+contturn);
-        double fright = -1.0*bleft-2.0*contturn;
-        double scale = Math.max(Math.max(Math.abs(fleft),Math.abs(bright)), Math.max(Math.abs(bleft),Math.abs(fright)));
-        scale=Math.max(scale,1);
-        return new double[]{fleft/scale,fright/scale,bleft/scale,bright/scale};
-    }
+
 } 
