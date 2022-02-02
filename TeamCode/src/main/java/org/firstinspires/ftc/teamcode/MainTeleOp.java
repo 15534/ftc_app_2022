@@ -7,84 +7,121 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp")
+@TeleOp(name = "TeleOp")
+@Config
 public class MainTeleOp extends LinearOpMode {
-    DcMotorEx motor;
 
-    public static double kP = -0.001; //-0.000065
-    public static double kI = 0;
-    public static double kD = 0;
+    DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft;
+    Servo intakePosition, outtakeServo, fr, br, fl, bl;
+
+    double mecDown = 0.08;
+    double intakeUp = 0.8;
+    double tankDown = 0.15;
+
+    public static int outtakeThirdLevelPosition = -330;
+    public static int outtakeFirstLevelPosition = -90;
+    public static int outtakeDownPosition = 0;
+    public static double outtakePower = 0.5;
+    public static double outtakeServoClosePosition = 0.9;
+    public static double outtakeServoOpenPosition = 0.8;
+
+    public static double intakeExtensionLowerLimit = -30;
+    public static double intakeExtensionUpperLimit = 270;
+    public static double intakePower = 0.6;
+
+    public static double leftStickPos = 1;
 
     public static double DPAD_SPEED = 0.35;
     public static double BUMPER_ROTATION_SPEED = 0.35;
     public static double ROTATION_MULTIPLIER = 2.05;
 
-    boolean isMec = true;
-    double mecDown = 0.08;
-    double intakeUp = 0.8;
-    double tankDown = 0.15;
-
-    private ElapsedTime runtime = new ElapsedTime();
+    public static boolean isMec = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        SampleMecanumDrive mecDrive = new SampleMecanumDrive(hardwareMap);
+        mecDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        SampleTankDrive tankDrive = new SampleTankDrive(hardwareMap);
+        tankDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        fl = hardwareMap.get(Servo.class, "frontleft"); // lower: 0.984, upper: 0
+        fr = hardwareMap.get(Servo.class, "frontright"); // lower: .1, upper: 1
+        br = hardwareMap.get(Servo.class, "backright"); // lower: 0.954, upper: 0
+        bl = hardwareMap.get(Servo.class, "backleft"); // lower: 0.02, upper: 1
+
+        motorExLeft = (DcMotorEx)hardwareMap.get(DcMotor.class, "intake");
+        outtakeServo = hardwareMap.get(Servo.class, "outtake servo");
+
+        intakeSurgical = hardwareMap.get(DcMotorEx.class, "intakeSurgical");
+        intakeSurgical.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        intakeSurgical.setDirection(DcMotor.Direction.FORWARD);
+        intakeSurgical.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        double power = 0.0;
+        double scale = 0.0;
+
+        outtake = hardwareMap.get(DcMotorEx.class, "intake");
+        outtake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        outtake.setDirection(DcMotor.Direction.REVERSE);
+        outtake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
+        intakeExtension.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        intakeExtension.setDirection(DcMotor.Direction.REVERSE);
+        intakeExtension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        //PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
+        //PIDFController controller = new PIDFController(coeffs, 0, 0, 0, (x, v) -> kG);
+
+        intakePosition = hardwareMap.get(Servo.class, "intakeLift");
+
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-//        motor = hardwareMap.get(DcMotorEx.class, "intake");
-//        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-//        motor.setDirection(DcMotor.Direction.REVERSE);
-//        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // init robot
+        intakeExtensionLowerLimit = intakeExtension.getCurrentPosition();
+        intakeExtensionUpperLimit = intakeExtensionLowerLimit + 270;
+        intakePosition.setPosition(intakeUp);
+        motorExLeft.setTargetPosition(outtakeDownPosition);
+        outtakeServo.setPosition(outtakeServoClosePosition);
 
-        PIDCoefficients coeffs = new PIDCoefficients(kP, kI, kD);
-        PIDFController controller = new PIDFController(coeffs, 0, 0, 0);
-
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        GamepadEx gp1 = new GamepadEx(gamepad1);
-        GamepadEx gp2 = new GamepadEx(gamepad2);
-
-        Servo intake = hardwareMap.get(Servo.class, "intake");
-        Servo fl = hardwareMap.get(Servo.class, "frontleft");
-        // limits: 0.98 & 0
-        Servo br = hardwareMap.get(Servo.class, "backright");
-        // limits: 0.98 & 0
-        Servo fr = hardwareMap.get(Servo.class, "frontright");
-        // limits: 0.0175 & 1
-        Servo bl = hardwareMap.get(Servo.class, "backleft");
-        // limits: 0.034 & 1
-        waitForStart();
+        fl.setPosition(0.984);
+        fr.setPosition(.1);
+        br.setPosition(0.955);
+        bl.setPosition(0.02);
 
         waitForStart();
+
         while (!isStopRequested()) {
-            drive.update();
-            Pose2d poseEstimate = drive.getPoseEstimate();
+            mecDrive.update();
+            tankDrive.update();
+
+            Pose2d poseEstimate;
+            if (isMec) {
+                poseEstimate = mecDrive.getPoseEstimate();
+            } else {
+                poseEstimate = tankDrive.getPoseEstimate();
+            }
             PoseStorage.currentPose = poseEstimate;
 
-            //telemetry.addData("mode", currentMode);
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
-
-            //motor.setPower(gamepad1.right_stick_y * 0.5);
+            //telemetry.addData("upper limit: ", intakeExtensionUpperLimit);
+            //telemetry.addData("lower limit: ", intakeExtensionLowerLimit);
 
             Vector2d translation = new Vector2d(-gamepad1.left_stick_y, -gamepad1.left_stick_x);
             double rotation = -ROTATION_MULTIPLIER * gamepad1.right_stick_x;
@@ -107,42 +144,116 @@ public class MainTeleOp extends LinearOpMode {
                 rotation = -BUMPER_ROTATION_SPEED;
             }
 
-            drive.setWeightedDrivePower(new Pose2d(translation, rotation));
+            if (isMec) {
+                mecDrive.setWeightedDrivePower(new Pose2d(translation, rotation));
+            } else {
+                tankDrive.setWeightedDrivePower(new Pose2d(translation, rotation));
+            }
+            // surgical tubing
+            if (gamepad2.right_trigger < 0.5 && gamepad2.left_trigger < 0.5) {
+                intakeSurgical.setPower(0);
+            }
+
+            if (gamepad2.right_trigger > 0.5) {
+                intakeSurgical.setPower(gamepad2.right_trigger);
+            }
+
+            if (gamepad2.left_trigger > 0.5) {
+                intakeSurgical.setPower(-1 * gamepad2.left_trigger);
+            }
+
+            //telemetry.addData("gamepad stick position: ", gamepad2.right_stick_y);
+            //telemetry.update();
+
+            // intake servo
+            //range for stick is -1 at top and 1 at bottom
+            // intake comes down
+            if (gamepad2.right_stick_y > 0.1) {
+                intakePosition.setPosition(tankDown); // tank mode down
+            }
+
+            if (gamepad2.right_stick_y < -0.1) {
+                intakePosition.setPosition(intakeUp); // general servo up position
+            }
+
+            //double function = 0.1;
+            //if(pos>0){
+            //  pos+=intakeExtension.getPower()*20;
+            //function = Math.max(4.9*Math.sqrt(pos/300.0)*Math.exp(-1.0*pos/50.0),0.1);
+            //}
+
+            // intake extension motor
+            if (gamepad2.left_stick_y > 0.1) {
+                int pos = intakeExtension.getCurrentPosition() - (int) intakeExtensionLowerLimit;
+                double function = Math.max((0.12 * (Math.sin((Math.PI / 270) * pos) * Math.exp(Math.PI * pos / 270))), 0.12);
+                // intake should come back up
+                if (intakeExtension.getCurrentPosition() >= intakeExtensionLowerLimit) {
+                    power = 1/1.5 *(gamepad2.left_stick_y * (function));
+                    scale = 1/1.5 *function;
+                    intakeExtension.setTargetPosition((int) intakeExtensionLowerLimit);
+                    intakeExtension.setPower(-power);
+                } else {
+                    intakeExtension.setPower(0.0);
+                }
+            } else if (gamepad2.left_stick_y < -0.1) {
+                int pos = (int)intakeExtensionUpperLimit -intakeExtension.getCurrentPosition();
+                double function = Math.max((0.12 * (Math.sin((Math.PI / 270) * pos) * Math.exp(Math.PI * pos / 270))), 0.12);
+                // intake extends
+                if (intakeExtension.getCurrentPosition() <= intakeExtensionUpperLimit) {
+                    power = 1/1.5 * (gamepad2.left_stick_y * (function));
+                    scale = 1/1.5 * (function);
+                    intakeExtension.setPower(-power);
+                } else {
+                    intakeExtension.setPower(0.0);
+                }
+            } else {
+                intakeExtension.setPower(0.0);
+            }
+
+            if (gamepad2.dpad_up) {
+                motorExLeft.setTargetPosition(outtakeThirdLevelPosition);
+                motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorExLeft.setPower(outtakePower);
+            }
+
+            if (gamepad2.dpad_left) {
+                motorExLeft.setTargetPosition(outtakeFirstLevelPosition);
+                motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorExLeft.setPower(outtakePower);
+            }
+
+            if (gamepad2.dpad_right) {
+                outtakeServo.setPosition(outtakeServoOpenPosition);
+            }
+
+            if (gamepad2.dpad_down) {
+                motorExLeft.setTargetPosition(outtakeDownPosition);
+                motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motorExLeft.setPower(outtakePower);
+
+                outtakeServo.setPosition(outtakeServoClosePosition);
+            }
+
+            // dpad left - tier 1
+            // dpad right - open outtake servo that contains freight
+            // dpad down - return to position 0 and close outtake servo as well
+
+//
+//            if (gamepad2.left_stick_y > 0.0) {
+//                if (intakeExtension.getCurrentPosition() < intakeExtensionUpperLimit
+//                    && intakeExtension.getCurrentPosition() > intakeExtensionLowerLimit) {
+//                    intakeExtension.setPower(gamepad2.left_stick_y);
+//                }
+//            }
+
+            //telemetry.addData("power: ", power);
+            //telemetry.addData("scale", scale);
+            telemetry.addData("proposed intake power: ", power);
+            telemetry.addData("proposed intake scaling factor: ", scale);
+            telemetry.addData("joystick input: ", gamepad2.left_stick_y);
+            telemetry.addData("intakExtension: ", intakeExtension.getCurrentPosition());
+            telemetry.addData("outtake position: ", motorExLeft.getCurrentPosition());
             telemetry.update();
-
-            if (gamepad2.right_stick_y < -0.3 && !isMec) {
-                intake.setPosition(tankDown);
-            } else if (gamepad2.right_stick_y < -0.3 && isMec) {
-                intake.setPosition(mecDown);
-            } else if (gamepad2.right_stick_y > 0.3) {
-                intake.setPosition(intakeUp);
-            }
-
-            if (gamepad2.right_trigger > 0.6) {
-                //mecanum is higher so down position is lower
-                //tank is lower so down position is higher
-                if (isMec) { //change from mecanum to tank
-                    isMec = false;
-                    intake.setPosition(intakeUp);
-                    runtime.wait(700);
-                    fl.setPosition(0);
-                    bl.setPosition(1);
-                    fr.setPosition(1);
-                    br.setPosition(0);
-                } else { //change from tank to mecanum
-                    isMec = true;
-                    fl.setPosition(0.98);
-                    bl.setPosition(0.034);
-                    fr.setPosition(0.0175);
-                    br.setPosition(0.98);
-                    runtime.wait(700);
-                    intake.setPosition(mecDown);
-                }
-
-                while (gamepad2.right_trigger > 0.6) {
-
-                }
-            }
         }
     }
 }
