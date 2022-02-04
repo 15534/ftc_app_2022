@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
@@ -15,9 +17,11 @@ import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 
 import java.util.Vector;
 
-
+@Config
 @Autonomous(name = "RedAuto")
 public class RedAuto extends LinearOpMode {
+    DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright;
+
     public SampleMecanumDrive mecanumDrive;
     public SampleTankDrive tankDrive;
 
@@ -26,14 +30,19 @@ public class RedAuto extends LinearOpMode {
     State currentState = State.IDLE;
     LinearOpMode op;
 
-    Pose2d startingPosition = new Pose2d(-9, -63, Math.toRadians(90));
-    Pose2d shippingHubPose = new Pose2d(5, -30, Math.toRadians(-20));
+    Pose2d startingPosition = new Pose2d(-59, -56, Math.toRadians(90 - Math.atan(7 / 17)));
+    Vector2d carouselPos = new Vector2d(-60, -56);
+
+    Pose2d shippingHubPose = new Pose2d(-36,-39, (Math.atan(4.5 / 16) - (Math.PI / 2)));
+    Vector2d test = new Vector2d(-36, -39);
     Vector2d storageUnitPose = new Vector2d(-48, -36);
-    Vector2d carouselPos = new Vector2d(-63, -54);
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
+
     Trajectory goToCarouselFromStarting, goToShippingHubFromCarousel, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
+
     Servo fr, br, fl, bl;
+
     enum State {
         GO_TO_CAROUSEL,
         KNOCK_OFF_DUCK,
@@ -63,15 +72,22 @@ public class RedAuto extends LinearOpMode {
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
         mecanumDrive.setPoseEstimate(startingPosition);
         tankDrive  = new SampleTankDrive(hardwareMap);
+
+        carousel = hardwareMap.get(DcMotorEx.class,"caro");
+        fleft = hardwareMap.get(DcMotorEx.class, "front_left");
+        fright = hardwareMap.get(DcMotorEx.class, "front_right");
+        bleft = hardwareMap.get(DcMotorEx.class, "rear_left");
+        bright = hardwareMap.get(DcMotorEx.class, "rear_right");
     }
 
     public void buildTrajectories() {
         goToCarouselFromStarting = mecanumDrive.trajectoryBuilder(startingPosition)
-                .splineToConstantHeading(carouselPos, Math.toRadians(0))
+                .lineTo(carouselPos)
                 .build();
 
         goToShippingHubFromCarousel = mecanumDrive.trajectoryBuilder(goToCarouselFromStarting.end())
-                .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
+                .splineToConstantHeading(test, Math.toRadians(0))
+                //.splineToSplineHeading(shippingHubPose, Math.toRadians(0))
                 .build();
 
 //        goToFreightFromShippingHub = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
@@ -113,38 +129,43 @@ public class RedAuto extends LinearOpMode {
         // tank is whole numbers
         //PoseStorage.currentPose = startingPosition;
 
+        intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
+
         initialize();
         buildTrajectories();
-
         runtime.reset();
+
         waitForStart();
 
-        mecanumDrive.followTrajectoryAsync(goToCarouselFromStarting); // path to go to carousel
+        mecanumDrive.turnAsync(Math.toRadians(10));
         next(State.KNOCK_OFF_DUCK);
 
         while(opModeIsActive()) {
+            intakeExtension.setPower(0.2);
             telemetry.addLine("running");
             double elapsed = runtime.seconds() - time;
             switch (currentState) {
-               case GO_TO_CAROUSEL:
+               case KNOCK_OFF_DUCK:
                     if (!mecanumDrive.isBusy()) {
-                        next(State.KNOCK_OFF_DUCK);
-                    }
-                    break;
-                case KNOCK_OFF_DUCK:
-                    if (!mecanumDrive.isBusy()) {
-                        // TODO has code here to knock duck off
-                        //next(State.GO_TO_SHIPPING_HUB);
+                        while (elapsed + 5 < runtime.seconds() - time) {
+                            // should spin for 6 seconds
+                            carousel.setPower(-0.5);
+                            fleft.setPower(-0.1);
+                            fright.setPower(-0.1);
+                            bleft.setPower(-0.1);
+                            bright.setPower(-0.1);
+                        }
                         next(State.IDLE);
                     }
                     break;
-//                case GO_TO_SHIPPING_HUB:
-//                    // path to go to shipping hub
-//                    if (!mecanumDrive.isBusy()) {
-//                        mecanumDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
-//                        next(State.TURN_AT_SHIPPING_HUB);
-//                    }
-//                    break;
+                case GO_TO_SHIPPING_HUB:
+                    // path to go to shipping hub
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
+
+                        next(State.IDLE);
+                    }
+                    break;
 //                case TURN_AT_SHIPPING_HUB:
 //                    if (!mecanumDrive.isBusy()) {
 //                        double dX = Math.abs(wareHousePos.getX() - shippingHubPose.getX());
