@@ -86,10 +86,10 @@ public class MecanumDriveConstants {
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
 
      */
-    public static double MAX_VEL = 40;// 47.907;
-    public static double MAX_ACCEL = 22.5;// 52.48180821614297;
-    public static double MAX_ANG_VEL = Math.toRadians(180); // Math.toRadians(33.74084763191785);
-    public static double MAX_ANG_ACCEL = Math.toRadians(184.02607784577722);
+    public static double MAX_VEL = 40.0;// 47.907;
+    public static double MAX_ACCEL = 5.5;// 52.48180821614297;
+    public static double MAX_ANG_VEL = 0.6*Math.toRadians(180); // Math.toRadians(33.74084763191785);
+    public static double MAX_ANG_ACCEL = 0.4*Math.toRadians(184.02607784577722);
 
 
     public static double encoderTicksToInches(double ticks) {

@@ -31,7 +31,7 @@ public class RedAuto extends LinearOpMode {
     LinearOpMode op;
 
     Pose2d startingPosition = new Pose2d(-59, -56, Math.toRadians(90 - Math.atan(7 / 17)));
-    Vector2d carouselPos = new Vector2d(-60, -56);
+    Vector2d carouselPos = new Vector2d(60, -56);
 
     Pose2d shippingHubPose = new Pose2d(-36,-39, (Math.atan(4.5 / 16) - (Math.PI / 2)));
     Vector2d test = new Vector2d(-36, -39);
@@ -162,7 +162,6 @@ public class RedAuto extends LinearOpMode {
                     // path to go to shipping hub
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
-
                         next(State.IDLE);
                     }
                     break;
