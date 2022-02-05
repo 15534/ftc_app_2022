@@ -146,16 +146,16 @@ public class RedAuto extends LinearOpMode {
             double elapsed = runtime.seconds() - time;
             switch (currentState) {
                case KNOCK_OFF_DUCK:
-                    if (!mecanumDrive.isBusy()) {
-                        while (elapsed + 5 < runtime.seconds() - time) {
-                            // should spin for 6 seconds
-                            carousel.setPower(-0.5);
-                            fleft.setPower(-0.1);
-                            fright.setPower(-0.1);
-                            bleft.setPower(-0.1);
-                            bright.setPower(-0.1);
-                        }
-                        next(State.IDLE);
+                    if (elapsed < 5) {
+                        // should spin for 6 seconds
+                        carousel.setPower(-0.5);
+                        fleft.setPower(-0.1);
+                        fright.setPower(-0.1);
+                        bleft.setPower(-0.1);
+                        bright.setPower(-0.1);
+                    }
+                    if (!mecanumDrive.isBusy() && elapsed >= 5) {
+                        next(State.KNOCK_OFF_DUCK);
                     }
                     break;
                 case GO_TO_SHIPPING_HUB:
