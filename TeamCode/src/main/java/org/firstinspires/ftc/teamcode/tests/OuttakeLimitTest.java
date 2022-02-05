@@ -47,7 +47,7 @@ public class OuttakeLimitTest extends LinearOpMode {
 //                br.setPosition(0);
 //                bl.setPosition(1);
 //            }
-            br.setPosition(pos);
+            //br.setPosition(pos);
             //s.setPosition(pos); // max servo position is 0.9, when we want to lift servo up make servo position 0.8
             //telemetry.addData("position",s.getPosition());
             telemetry.addData("outtake pos: ", outtake.getCurrentPosition());

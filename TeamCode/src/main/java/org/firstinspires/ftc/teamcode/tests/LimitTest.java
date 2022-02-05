@@ -11,29 +11,32 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 @TeleOp(name = "Limit Test")
 @Config
 public class LimitTest extends LinearOpMode {
-    public static double servoPower = 0.08;
+    public static double servoPos = 0.05;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotorEx motor = hardwareMap.get(DcMotorEx.class, "intake");
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor.setDirection(DcMotor.Direction.REVERSE);
-        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        DcMotorEx motor = hardwareMap.get(DcMotorEx.class, "intake");
+//        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//        motor.setDirection(DcMotor.Direction.REVERSE);
+//        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Servo intakePosition = hardwareMap.get(Servo.class, "intakeLift");
+
 
         //Servo s = hardwareMap.get(Servo.class, "stick");
-        Servo s = hardwareMap.get(Servo.class, "stopper");
+        //Servo s = hardwareMap.get(Servo.class, "stopper");
 
-        Servo fl = hardwareMap.get(Servo.class, "frontleft");
-
-        DcMotorEx motor2 = hardwareMap.get(DcMotorEx.class, "left");
-        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        motor2.setDirection(DcMotor.Direction.FORWARD);
-        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        Servo fl = hardwareMap.get(Servo.class, "frontleft");
+//
+//        DcMotorEx motor2 = hardwareMap.get(DcMotorEx.class, "left");
+//        motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+//        motor2.setDirection(DcMotor.Direction.FORWARD);
+//        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
 
         while (opModeIsActive()) {
-            s.setPosition(servoPower);
+            intakePosition.setPosition(servoPos);
+            //s.setPosition(servoPower);
             //fl.setPosition(0.0);
 
             //motor2.setVelocity(1000);
@@ -44,7 +47,7 @@ public class LimitTest extends LinearOpMode {
 //            }
 
             //telemetry.addData("position",motor.getCurrentPosition());
-            telemetry.addData("position",s.getPosition());
+            telemetry.addData("position",intakePosition.getPosition());
             telemetry.update();
         }
     }

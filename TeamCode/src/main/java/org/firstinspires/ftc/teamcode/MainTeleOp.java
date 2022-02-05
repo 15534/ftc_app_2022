@@ -7,7 +7,9 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,19 +26,19 @@ import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 @Config
 public class MainTeleOp extends LinearOpMode {
 
-    DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft;
+    DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft, carousel;
     Servo intakePosition, outtakeServo, fr, br, fl, bl;
 
-    double mecDown = 0.08;
-    double intakeUp = 0.8;
-    double tankDown = 0.15;
+    double mecDown = 0.88;
+    double intakeUp = 0.15;
+    double tankDown = 0.85;
 
-    public static int outtakeThirdLevelPosition = -350;
+    public static int outtakeThirdLevelPosition = -360;
     public static int outtakeFirstLevelPosition = -120;
     public static int outtakeDownPosition = 0;
     public static double outtakePower = 0.5;
     public static double outtakeServoClosePosition = 0.9;
-    public static double outtakeServoOpenPosition = 0.8;
+    public static double outtakeServoOpenPosition = 0.4;
 
     public static double intakeExtensionLowerLimit = -30;
     public static double intakeExtensionUpperLimit = 270;
@@ -57,11 +59,18 @@ public class MainTeleOp extends LinearOpMode {
         int startpoint = 0;
         double power = 0.0;
         double scale = 0.0;
+
         SampleMecanumDrive mecDrive = new SampleMecanumDrive(hardwareMap);
         mecDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         SampleTankDrive tankDrive = new SampleTankDrive(hardwareMap);
         tankDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        GamepadEx gp1 = new GamepadEx(gamepad1);
+        GamepadEx gp2 = new GamepadEx(gamepad2);
+
+        ButtonReader redCarousel = new ButtonReader(gp2, GamepadKeys.Button.B);
+        ButtonReader blueCarousel = new ButtonReader(gp2, GamepadKeys.Button.X);
 
         fl = hardwareMap.get(Servo.class, "frontleft"); // lower: 0.984, upper: 0
         fr = hardwareMap.get(Servo.class, "frontright"); // lower: .1, upper: 1
@@ -76,7 +85,7 @@ public class MainTeleOp extends LinearOpMode {
         intakeSurgical.setDirection(DcMotor.Direction.FORWARD);
         intakeSurgical.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
+        carousel = hardwareMap.get(DcMotorEx.class,"caro");
 
         outtake = hardwareMap.get(DcMotorEx.class, "intake");
         outtake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -102,16 +111,22 @@ public class MainTeleOp extends LinearOpMode {
         intakePosition.setPosition(intakeUp);
         motorExLeft.setTargetPosition(outtakeDownPosition);
         outtakeServo.setPosition(outtakeServoClosePosition);
+
         double scaler = 0.6;
+
         fl.setPosition(0.984);
-        fr.setPosition(.1);
+        fr.setPosition(0.1);
         br.setPosition(0.955);
         bl.setPosition(0.02);
+
         boolean a = true;
         boolean b = true;
         boolean x = true;
         boolean y = true;
         boolean pressed = true;
+
+        boolean toggleOff = false;
+
         waitForStart();
 
         while (!isStopRequested()) {
@@ -130,14 +145,16 @@ public class MainTeleOp extends LinearOpMode {
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.addData("scaler", scaler);
-            telemetry.update();
+            telemetry.addData("intake servo position: ", intakePosition.getPosition());
+            telemetry.addData("outtakePosition: ", outtake.getCurrentPosition());
             //telemetry.addData("upper limit: ", intakeExtensionUpperLimit);
             //telemetry.addData("lower limit: ", intakeExtensionLowerLimit);
 
-            Vector2d translation = new Vector2d(-gamepad1.left_stick_y*scaler, gamepad1.left_stick_x*scaler);
+            redCarousel.readValue();
+            blueCarousel.readValue();
+
+            Vector2d translation = new Vector2d(-gamepad1.left_stick_y*scaler, -gamepad1.left_stick_x*scaler);
             double rotation = -ROTATION_MULTIPLIER * gamepad1.right_stick_x*scaler;
-
-
 
             // slow translation with dpad
             if (gamepad1.dpad_up) {
@@ -163,6 +180,30 @@ public class MainTeleOp extends LinearOpMode {
                 translation = new Vector2d(-gamepad1.left_stick_y*scaler, 0.0);
                 tankDrive.setWeightedDrivePower(new Pose2d(translation, rotation));
             }
+
+            // carousel
+            double state = 0;
+            if(gamepad2.x){
+                state++;
+            }
+            if(gamepad2.b){
+                state--;
+            }
+            carousel.setPower(0.6 * state);
+//            if (redCarousel.isDown()) {
+//                carousel.setPower(-1);
+//            } else {
+//                carousel.setPower(0.0);
+//            }
+//
+//            if (blueCarousel.isDown()) {
+//                carousel.setPower(1);
+//            } else {
+//                carousel.setPower(0.0);
+//            }
+
+            telemetry.addData("red carousel down: ", redCarousel.isDown());
+
             // surgical tubing
             if (gamepad2.right_trigger < 0.5 && gamepad2.left_trigger < 0.5) {
                 intakeSurgical.setPower(0);
@@ -269,6 +310,8 @@ public class MainTeleOp extends LinearOpMode {
 
 
             }
+
+            // outtake
             if (gamepad2.dpad_up) {
                 if(intakeExtension.getCurrentPosition()-intakeExtensionLowerLimit<100){
                     intakeExtension.setPower(0.2);
@@ -276,7 +319,6 @@ public class MainTeleOp extends LinearOpMode {
                 motorExLeft.setTargetPosition(outtakeThirdLevelPosition);
                 motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motorExLeft.setPower(outtakePower);
-
             }
 
             if (gamepad2.dpad_left) {
@@ -286,6 +328,21 @@ public class MainTeleOp extends LinearOpMode {
                 motorExLeft.setTargetPosition(outtakeFirstLevelPosition);
                 motorExLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 motorExLeft.setPower(outtakePower);
+            }
+
+            // FIX THIS
+            if (gamepad2.y) {
+                if (outtake.getCurrentPosition() < outtakeThirdLevelPosition && outtake.getCurrentPosition() > -5) {
+                    telemetry.addLine("raising manually");
+                    outtake.setPower(0.2);
+                }
+            }
+
+            if (gamepad2.a) {
+                if (outtake.getCurrentPosition() < outtakeThirdLevelPosition && outtake.getCurrentPosition() > -5) {                    telemetry.addLine("raising manually");
+                    telemetry.addLine("lowering manually");
+                    outtake.setPower(-0.2);
+                }
             }
 
             if (gamepad2.dpad_right) {
@@ -306,33 +363,37 @@ public class MainTeleOp extends LinearOpMode {
 
                 outtakeServo.setPosition(outtakeServoClosePosition);
             }
+            telemetry.addData("intake Position: ", intakePosition.getPosition());
             if(gamepad1.right_trigger>0.6&&pressed){
                 if(isMec){
+                    // switcing from mec to tank
+                    if(intakePosition.getPosition() > mecDown - 0.01 && intakePosition.getPosition() < mecDown + 0.01){
+                        intakePosition.setPosition(tankDown);
+                    }
                     fr.setPosition(1);
                     br.setPosition(0);
                     fl.setPosition(0);
                     bl.setPosition(1);
+
                     isMec=false;
-                    if(intakePosition.getPosition()==mecDown){
-                        intakePosition.setPosition(tankDown);
-                    }
+
                 }else{
+                    // switching from tank to mec
+                    if(intakePosition.getPosition() > tankDown - 0.01 && intakePosition.getPosition() < tankDown + 0.01){
+                        intakePosition.setPosition(mecDown);
+                    }
                     fl.setPosition(0.984);
                     fr.setPosition(.1);
                     br.setPosition(0.955);
                     bl.setPosition(0.02);
                     isMec=true;
-                    if(intakePosition.getPosition()==tankDown){
-                        intakePosition.setPosition(mecDown);
-                    }
+
                 }
                 pressed=false;
-
             }
             if(gamepad1.right_trigger<0.6){
                 pressed=true;
             }
-
 
             if (gamepad1.a&&a) {
                 scaler=Math.max(0.2, scaler-0.2);
@@ -364,6 +425,8 @@ public class MainTeleOp extends LinearOpMode {
             if(!gamepad1.y){
                 y=true;
             }
+
+            telemetry.update();
 
         }
 

@@ -15,9 +15,9 @@ public class RedAutonSimulation {
     static Trajectory goToCarouselFromStarting, goToShippingHubFromCarousel, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
 
     static Pose2d startingPosition = new Pose2d(-33, -63, Math.toRadians(0));
-    static Pose2d shippingHubPose = new Pose2d(5, -30, Math.toRadians(-20));
+    static Pose2d shippingHubPose = new Pose2d(-24,-36.5, ((Math.PI) + Math.atan(11.5/13.5)));
     static Vector2d storageUnitPose = new Vector2d(-48, -36);
-    static Pose2d carouselPos = new Pose2d(-55, -63, Math.toRadians(60));
+    static Vector2d carouselPos = new Vector2d(60, -56);
     static Vector2d wareHousePos = new Vector2d(36, -60);
     static Vector2d switchingPos = new Vector2d(0, -48);
 
@@ -30,13 +30,14 @@ public class RedAutonSimulation {
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(40, 25, Math.toRadians(180), Math.toRadians(184.02607784577722), 5.5)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(carouselPos)
+                        drive.trajectorySequenceBuilder(startingPosition)
+                                .lineTo(carouselPos)
                                 .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
-                                .lineTo(wareHousePos)
-                                .turn(Math.toRadians(20))
-                                .lineTo(new Vector2d(wareHousePos.getX() + 12, wareHousePos.getY()))
-                                .lineTo(new Vector2d(switchingPos.getX(), switchingPos.getY()))
-                                .lineTo(new Vector2d(storageUnitPose.getX(), storageUnitPose.getY()))
+//                                .lineTo(wareHousePos)
+//                                .turn(Math.toRadians(20))
+//                                .lineTo(new Vector2d(wareHousePos.getX() + 12, wareHousePos.getY()))
+//                                .lineTo(new Vector2d(switchingPos.getX(), switchingPos.getY()))
+//                                .lineTo(new Vector2d(storageUnitPose.getX(), storageUnitPose.getY()))
                                 .build()
                 );
 

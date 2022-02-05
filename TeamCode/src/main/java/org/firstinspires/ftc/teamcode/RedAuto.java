@@ -30,11 +30,9 @@ public class RedAuto extends LinearOpMode {
     State currentState = State.IDLE;
     LinearOpMode op;
 
-    Pose2d startingPosition = new Pose2d(-59, -56, Math.toRadians(90 - Math.atan(7 / 17)));
+    Pose2d startingPosition = new Pose2d(-59, -56, ((Math.PI/2) - Math.atan(7 / 17)));
     Vector2d carouselPos = new Vector2d(60, -56);
-
-    Pose2d shippingHubPose = new Pose2d(-36,-39, (Math.atan(4.5 / 16) - (Math.PI / 2)));
-    Vector2d test = new Vector2d(-36, -39);
+    Pose2d shippingHubPose = new Pose2d(-24,-36.5, ((Math.PI) + Math.atan(11.5/13.5)));
     Vector2d storageUnitPose = new Vector2d(-48, -36);
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
@@ -86,7 +84,8 @@ public class RedAuto extends LinearOpMode {
                 .build();
 
         goToShippingHubFromCarousel = mecanumDrive.trajectoryBuilder(goToCarouselFromStarting.end())
-                .splineToConstantHeading(test, Math.toRadians(0))
+                //.lineToSplineHeading(shippingHubPose)
+                .lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
                 //.splineToSplineHeading(shippingHubPose, Math.toRadians(0))
                 .build();
 
@@ -128,6 +127,10 @@ public class RedAuto extends LinearOpMode {
         // limits: 0.034 & 1
         // tank is whole numbers
         //PoseStorage.currentPose = startingPosition;
+        fl.setPosition(0.984);
+        fr.setPosition(.1);
+        br.setPosition(0.955);
+        bl.setPosition(0.02);
 
         intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
 
@@ -137,6 +140,7 @@ public class RedAuto extends LinearOpMode {
 
         waitForStart();
 
+        mecanumDrive.setPoseEstimate(startingPosition);
         mecanumDrive.turnAsync(Math.toRadians(10));
         next(State.KNOCK_OFF_DUCK);
 
@@ -147,33 +151,39 @@ public class RedAuto extends LinearOpMode {
             switch (currentState) {
                case KNOCK_OFF_DUCK:
                     if (elapsed < 5) {
-                        // should spin for 6 seconds
+                        // should spin for 5 seconds
                         carousel.setPower(-0.5);
                         fleft.setPower(-0.1);
                         fright.setPower(-0.1);
                         bleft.setPower(-0.1);
                         bright.setPower(-0.1);
+                    } else {
+                        carousel.setPower(0.0);
+                        fleft.setPower(0.0);
+                        fright.setPower(0.0);
+                        bleft.setPower(0.0);
+                        bright.setPower(0.0);
                     }
                     if (!mecanumDrive.isBusy() && elapsed >= 5) {
-                        next(State.KNOCK_OFF_DUCK);
+                        next(State.GO_TO_SHIPPING_HUB);
                     }
                     break;
                 case GO_TO_SHIPPING_HUB:
                     // path to go to shipping hub
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
-                        next(State.IDLE);
+                        next(State.TURN_AT_SHIPPING_HUB);
                     }
                     break;
-//                case TURN_AT_SHIPPING_HUB:
-//                    if (!mecanumDrive.isBusy()) {
+                case TURN_AT_SHIPPING_HUB:
+                    if (!mecanumDrive.isBusy()) {
 //                        double dX = Math.abs(wareHousePos.getX() - shippingHubPose.getX());
 //                        double dY = Math.abs(wareHousePos.getY() - shippingHubPose.getY());
 //                        double heading = Math.atan(dY / -dX);
-//                        mecanumDrive.turnAsync(heading);
-//                        next(State.SWITCH_TO_TANK);
-//                    }
-//                    break;
+                        mecanumDrive.turnAsync(shippingHubPose.getHeading());
+                        next(State.IDLE);
+                    }
+                    break;
 //                case SWITCH_TO_TANK:
 //                    if (!mecanumDrive.isBusy()) {
 //                       switchFromMecToTank();
