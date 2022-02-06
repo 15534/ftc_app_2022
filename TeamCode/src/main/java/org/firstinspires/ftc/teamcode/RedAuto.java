@@ -20,7 +20,7 @@ import java.util.Vector;
 @Config
 @Autonomous(name = "RedAuto")
 public class RedAuto extends LinearOpMode {
-    DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright;
+    DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright, outtake;
 
     public SampleMecanumDrive mecanumDrive;
     public SampleTankDrive tankDrive;
@@ -31,20 +31,34 @@ public class RedAuto extends LinearOpMode {
     LinearOpMode op;
 
     Pose2d startingPosition = new Pose2d(-59, -56, ((Math.PI/2) - Math.atan(7 / 17)));
-    Vector2d carouselPos = new Vector2d(60, -56);
-    Pose2d shippingHubPose = new Pose2d(-24,-36.5, ((Math.PI) + Math.atan(11.5/13.5)));
+    Vector2d carouselPos = new Vector2d(-60, -56);
+    //Pose2d shippingHubPose = new Pose2d(-39,-25, Math.toRadians(226));
+
+    Pose2d shippingHubPose = new Pose2d(-43,-22, Math.toRadians(226)); // account for drift!!
+
+    //Pose2d allianceFreightPose = new Pose2d(-12,-53, -Math.atan(8 / 16)); // account for drift!!
+    Pose2d allianceFreightPose = new Pose2d(-12,-29, -Math.atan(8 / 16)); // account for drift!!
+
     Vector2d storageUnitPose = new Vector2d(-48, -36);
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
 
-    Trajectory goToCarouselFromStarting, goToShippingHubFromCarousel, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
+    Trajectory goToCarouselFromStarting, goToShippingHubFromCarousel, goToAllianceFreightFromShippingHub, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
 
-    Servo fr, br, fl, bl;
+    Servo fr, br, fl, bl, outtakeServo;
+    public static int outtakeFirstLevelPosition = -120;
+    public static double outtakePower = 0.5;
+    public static double outtakeServoClosePosition = 0.9;
+    public static double outtakeServoOpenPosition = 0.4;
+    public static int outtakeDownPosition = 0;
 
     enum State {
         GO_TO_CAROUSEL,
         KNOCK_OFF_DUCK,
         GO_TO_SHIPPING_HUB,
+        GO_TO_ALLIANCE_FREIGHT,
+        TRANSITION_SHIPPING_HUB,
+        SCORE_FREIGHT_IN_SHIPPING_HUB,
         TURN_AT_SHIPPING_HUB,
         SWITCH_TO_TANK,
         DRIVE_TO_FREIGHT,
@@ -76,6 +90,29 @@ public class RedAuto extends LinearOpMode {
         fright = hardwareMap.get(DcMotorEx.class, "front_right");
         bleft = hardwareMap.get(DcMotorEx.class, "rear_left");
         bright = hardwareMap.get(DcMotorEx.class, "rear_right");
+
+        outtake = hardwareMap.get(DcMotorEx.class, "intake");
+        outtake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        outtake.setDirection(DcMotor.Direction.REVERSE);
+        outtake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        outtakeServo = hardwareMap.get(Servo.class, "outtake servo");
+
+        fl = hardwareMap.get(Servo.class, "frontleft");
+        // limits: 0.98 & 0
+        br = hardwareMap.get(Servo.class, "backright");
+        // limits: 0.98 & 0
+        fr = hardwareMap.get(Servo.class, "frontright");
+        // limits: 0.0175 &
+        bl = hardwareMap.get(Servo.class, "backleft");
+        // limits: 0.034 & 1
+        // tank is whole numbers
+        //PoseStorage.currentPose = startingPosition;
+        fl.setPosition(0.984);
+        fr.setPosition(.1);
+        br.setPosition(0.955);
+        bl.setPosition(0.02);
+
+        intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
     }
 
     public void buildTrajectories() {
@@ -85,8 +122,14 @@ public class RedAuto extends LinearOpMode {
 
         goToShippingHubFromCarousel = mecanumDrive.trajectoryBuilder(goToCarouselFromStarting.end())
                 //.lineToSplineHeading(shippingHubPose)
-                .lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
-                //.splineToSplineHeading(shippingHubPose, Math.toRadians(0))
+                //.lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
+                .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
+                .build();
+
+        goToAllianceFreightFromShippingHub = mecanumDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
+                //.lineToSplineHeading(shippingHubPose)
+                //.lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
+                .splineToSplineHeading(new Pose2d(allianceFreightPose.getX(), allianceFreightPose.getY(), allianceFreightPose.getHeading()), Math.toRadians(0))
                 .build();
 
 //        goToFreightFromShippingHub = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
@@ -117,23 +160,6 @@ public class RedAuto extends LinearOpMode {
     }
 
     public void runOpMode() throws InterruptedException {
-        fl = hardwareMap.get(Servo.class, "frontleft");
-        // limits: 0.98 & 0
-        br = hardwareMap.get(Servo.class, "backright");
-        // limits: 0.98 & 0
-        fr = hardwareMap.get(Servo.class, "frontright");
-        // limits: 0.0175 & 1
-        bl = hardwareMap.get(Servo.class, "backleft");
-        // limits: 0.034 & 1
-        // tank is whole numbers
-        //PoseStorage.currentPose = startingPosition;
-        fl.setPosition(0.984);
-        fr.setPosition(.1);
-        br.setPosition(0.955);
-        bl.setPosition(0.02);
-
-        intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
-
         initialize();
         buildTrajectories();
         runtime.reset();
@@ -172,18 +198,45 @@ public class RedAuto extends LinearOpMode {
                     // path to go to shipping hub
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
-                        next(State.TURN_AT_SHIPPING_HUB);
+                        next(State.GO_TO_ALLIANCE_FREIGHT);
                     }
                     break;
-                case TURN_AT_SHIPPING_HUB:
+//                case TRANSITION_SHIPPING_HUB:
+//                    if (!mecanumDrive.isBusy()) {
+//                        next(State.SCORE_FREIGHT_IN_SHIPPING_HUB);
+//                    }
+//                    break;
+//                case SCORE_FREIGHT_IN_SHIPPING_HUB:
+//                    outtakeServo.setPosition(outtakeServoOpenPosition);
+//                    telemetry.addData("outtake servo position: ", outtakeServo.getPosition());
+//
+//                    outtake.setTargetPosition(outtakeFirstLevelPosition);
+//                    outtake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                    outtake.setPower(outtakePower);
+//                    telemetry.addData("outtake position: ", outtake.getCurrentPosition());
+//
+//                    outtakeServo.setPosition(outtakeServoClosePosition);
+//                    outtake.setTargetPosition(outtakeDownPosition);
+//                    next(State.IDLE);
+                case GO_TO_ALLIANCE_FREIGHT:
                     if (!mecanumDrive.isBusy()) {
-//                        double dX = Math.abs(wareHousePos.getX() - shippingHubPose.getX());
-//                        double dY = Math.abs(wareHousePos.getY() - shippingHubPose.getY());
-//                        double heading = Math.atan(dY / -dX);
-                        mecanumDrive.turnAsync(shippingHubPose.getHeading());
+                        mecanumDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub);
                         next(State.IDLE);
                     }
                     break;
+//                case TURN_AT_ALLIANCE_FREIGHT:
+//                    if (!mecanumDrive.isBusy()) {
+//                        mecanumDrive.turnAsync();
+//                    }
+ //                case TURN_AT_SHIPPING_HUB:
+//                    if (!mecanumDrive.isBusy()) {
+////                        double dX = Math.abs(wareHousePos.getX() - shippingHubPose.getX());
+////                        double dY = Math.abs(wareHousePos.getY() - shippingHubPose.getY());
+////                        double heading = Math.atan(dY / -dX);
+//                        mecanumDrive.turnAsync(shippingHubPose.getHeading());
+//                        next(State.IDLE);
+//                    }
+//                    break;
 //                case SWITCH_TO_TANK:
 //                    if (!mecanumDrive.isBusy()) {
 //                       switchFromMecToTank();
@@ -251,7 +304,6 @@ public class RedAuto extends LinearOpMode {
 //                    }
 //                    break;
             }
-            telemetry.addLine("out of loop");
             // Read pose
             Pose2d poseEstimate = mecanumDrive.getPoseEstimate();
             PoseStorage.currentPose = poseEstimate;

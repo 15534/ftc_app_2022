@@ -16,6 +16,8 @@ public class RedAutonSimulation {
 
     static Pose2d startingPosition = new Pose2d(-33, -63, Math.toRadians(0));
     static Pose2d shippingHubPose = new Pose2d(-24,-36.5, ((Math.PI) + Math.atan(11.5/13.5)));
+    static Pose2d allianceFreightPose = new Pose2d(-12,-53, -Math.atan(8 / 16)); // account for drift!!
+
     static Vector2d storageUnitPose = new Vector2d(-48, -36);
     static Vector2d carouselPos = new Vector2d(60, -56);
     static Vector2d wareHousePos = new Vector2d(36, -60);
@@ -33,6 +35,7 @@ public class RedAutonSimulation {
                         drive.trajectorySequenceBuilder(startingPosition)
                                 .lineTo(carouselPos)
                                 .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
+                                .splineToSplineHeading(allianceFreightPose, Math.toRadians(0))
 //                                .lineTo(wareHousePos)
 //                                .turn(Math.toRadians(20))
 //                                .lineTo(new Vector2d(wareHousePos.getX() + 12, wareHousePos.getY()))
