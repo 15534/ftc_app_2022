@@ -14,12 +14,12 @@ import sun.text.ComposedCharIter;
 public class RedAutonSimulation {
     static Trajectory goToCarouselFromStarting, goToShippingHubFromCarousel, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
 
-    static Pose2d startingPosition = new Pose2d(-33, -63, Math.toRadians(0));
+    static Pose2d startingPosition = new Pose2d(-59, -56, ((Math.PI/2) - Math.atan(7 / 17)));
     static Pose2d shippingHubPose = new Pose2d(-24,-36.5, ((Math.PI) + Math.atan(11.5/13.5)));
     static Pose2d allianceFreightPose = new Pose2d(-12,-53, -Math.atan(8 / 16)); // account for drift!!
 
     static Vector2d storageUnitPose = new Vector2d(-48, -36);
-    static Vector2d carouselPos = new Vector2d(60, -56);
+    static Vector2d carouselPos = new Vector2d(-60, -56);
     static Vector2d wareHousePos = new Vector2d(36, -60);
     static Vector2d switchingPos = new Vector2d(0, -48);
 
@@ -30,18 +30,18 @@ public class RedAutonSimulation {
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
 
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(40, 25, Math.toRadians(180), Math.toRadians(184.02607784577722), 5.5)
+                .setConstraints(40, 5.5, 0.8*Math.toRadians(180), 0.6*Math.toRadians(184.02607784577722), 5.5)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(startingPosition)
-                                .lineTo(carouselPos)
-                                .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
-                                .splineToSplineHeading(allianceFreightPose, Math.toRadians(0))
+                                drive.trajectorySequenceBuilder(startingPosition)
+                                        .lineTo(carouselPos)
+                                        .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
+                                        .splineToSplineHeading(allianceFreightPose, Math.toRadians(0))
 //                                .lineTo(wareHousePos)
 //                                .turn(Math.toRadians(20))
 //                                .lineTo(new Vector2d(wareHousePos.getX() + 12, wareHousePos.getY()))
 //                                .lineTo(new Vector2d(switchingPos.getX(), switchingPos.getY()))
 //                                .lineTo(new Vector2d(storageUnitPose.getX(), storageUnitPose.getY()))
-                                .build()
+                                        .build()
                 );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_FREIGHTFRENZY_ADI_DARK)
