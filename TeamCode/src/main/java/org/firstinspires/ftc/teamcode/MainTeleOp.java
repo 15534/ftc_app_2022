@@ -29,7 +29,7 @@ public class MainTeleOp extends LinearOpMode {
     DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft, carousel;
     Servo intakePosition, outtakeServo, fr, br, fl, bl;
 
-    double mecDown = 0.88;
+    double mecDown = 0.89;
     double intakeUp = 0.15;
     double tankDown = 0.85;
 
@@ -37,7 +37,7 @@ public class MainTeleOp extends LinearOpMode {
     public static int outtakeFirstLevelPosition = -120;
     public static int outtakeDownPosition = 0;
     public static double outtakePower = 0.5;
-    public static double outtakeServoClosePosition = 0.9;
+    public static double outtakeServoClosePosition = 0.86;
     public static double outtakeServoOpenPosition = 0.4;
 
     public static double intakeExtensionLowerLimit = -30;
@@ -49,6 +49,8 @@ public class MainTeleOp extends LinearOpMode {
     public static double DPAD_SPEED = 0.35;
     public static double BUMPER_ROTATION_SPEED = 0.15;
     public static double ROTATION_MULTIPLIER = 0.4;
+
+    public static double TICKS_PER_REV = 537.6;
 
     public static boolean isMec = true;
 
@@ -162,9 +164,9 @@ public class MainTeleOp extends LinearOpMode {
             } else if (gamepad1.dpad_down) {
                 translation = new Vector2d(-DPAD_SPEED, 0);
             } else if (gamepad1.dpad_left) {
-                translation = new Vector2d(0, -DPAD_SPEED);
-            } else if (gamepad1.dpad_right) {
                 translation = new Vector2d(0, DPAD_SPEED);
+            } else if (gamepad1.dpad_right) {
+                translation = new Vector2d(0, -DPAD_SPEED);
             }
 
             // slow rotation with bumpers
@@ -182,6 +184,21 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             // carousel
+            if (gamepad2.x) {
+                if (carousel.getCurrentPosition() <= TICKS_PER_REV * 2 / 3 * 6) {
+                    carousel.setPower(0.6);
+                } else {
+                    carousel.setPower(1);
+                }
+            }
+            if (gamepad2.b) {
+                if (carousel.getCurrentPosition() <= -(TICKS_PER_REV * 2 / 3 * 6)) {
+                    carousel.setPower(-0.6);
+                } else {
+                    carousel.setPower(-1);
+                }
+            }
+
             double state = 0;
             if(gamepad2.x){
                 state++;
@@ -330,20 +347,20 @@ public class MainTeleOp extends LinearOpMode {
                 motorExLeft.setPower(outtakePower);
             }
 
-            // FIX THIS
-            if (gamepad2.y) {
-                if (outtake.getCurrentPosition() < outtakeThirdLevelPosition && outtake.getCurrentPosition() > -5) {
-                    telemetry.addLine("raising manually");
-                    outtake.setPower(0.2);
-                }
-            }
-
-            if (gamepad2.a) {
-                if (outtake.getCurrentPosition() < outtakeThirdLevelPosition && outtake.getCurrentPosition() > -5) {                    telemetry.addLine("raising manually");
-                    telemetry.addLine("lowering manually");
-                    outtake.setPower(-0.2);
-                }
-            }
+//            // FIX THIS
+//            if (gamepad2.y) {
+//                if (outtake.getCurrentPosition() < outtakeThirdLevelPosition && outtake.getCurrentPosition() > -5) {
+//                    telemetry.addLine("raising manually");
+//                    outtake.setPower(0.2);
+//                }
+//            }
+//
+//            if (gamepad2.a) {
+//                if (outtake.getCurrentPosition() < outtakeThirdLevelPosition && outtake.getCurrentPosition() > -5) {                    telemetry.addLine("raising manually");
+//                    telemetry.addLine("lowering manually");
+//                    outtake.setPower(-0.2);
+//                }
+//            }
 
             if (gamepad2.dpad_right) {
                 if(intakeExtension.getCurrentPosition()-intakeExtensionLowerLimit<100){

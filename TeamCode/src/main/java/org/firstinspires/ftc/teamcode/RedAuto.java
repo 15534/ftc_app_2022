@@ -39,13 +39,14 @@ public class RedAuto extends LinearOpMode {
     //Pose2d allianceFreightPose = new Pose2d(-12,-53, -Math.atan(8 / 16)); // account for drift!!
     Pose2d allianceFreightPose = new Pose2d(-17,-40, -Math.atan(8 / 16)); // account for drift!!
 
-    Pose2d scoreAllianceFreight = new Pose2d(-22, -21, Math.toRadians(-90));
+    Pose2d scoreAllianceFreight = new Pose2d(-22, -22.5, Math.toRadians(-90));
+    Pose2d teammateItem1 = new Pose2d(-28,-29, Math.toRadians(30));
 
     Vector2d storageUnitPose = new Vector2d(-48, -36);
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
 
-    Trajectory goToShippingHubFromAlliance, goToCarouselFromStarting, goToShippingHubFromCarousel, goToAllianceFreightFromShippingHub, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
+    Trajectory goToTeammateItemFromShippingHub, goToShippingHubFromAlliance, goToCarouselFromStarting, goToShippingHubFromCarousel, goToAllianceFreightFromShippingHub, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
 
     Servo fr, br, fl, bl, outtakeServo;
     public static int outtakeFirstLevelPosition = -120;
@@ -60,6 +61,7 @@ public class RedAuto extends LinearOpMode {
         GO_TO_SHIPPING_HUB,
         GO_TO_ALLIANCE_FREIGHT,
         SCORE_ALLIANCE_FREIGHT,
+        PICK_UP_TEAMMATE_ITEM,
         TRANSITION_SHIPPING_HUB,
         SCORE_FREIGHT_IN_SHIPPING_HUB,
         TURN_AT_SHIPPING_HUB,
@@ -102,6 +104,10 @@ public class RedAuto extends LinearOpMode {
 
         goToShippingHubFromAlliance = mecanumDrive.trajectoryBuilder(goToAllianceFreightFromShippingHub.end(), Math.toRadians(90))
                 .splineToSplineHeading(scoreAllianceFreight, Math.toRadians(90))
+                .build();
+
+        goToTeammateItemFromShippingHub = mecanumDrive.trajectoryBuilder(goToShippingHubFromAlliance.end())
+                .splineToSplineHeading(teammateItem1, Math.toRadians(90))
                 .build();
 
 //        goToFreightFromShippingHub = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
@@ -178,9 +184,9 @@ public class RedAuto extends LinearOpMode {
             double elapsed = runtime.seconds() - time;
             switch (currentState) {
                 case KNOCK_OFF_DUCK:
-                    if (elapsed < 5) {
-                        // should spin for 5 seconds
-                        carousel.setPower(-0.5);
+                    if (elapsed < 4) {
+                        // should spin for 4 seconds
+                        carousel.setPower(-0.6);
                         fleft.setPower(-0.1);
                         fright.setPower(-0.1);
                         bleft.setPower(-0.1);
@@ -192,7 +198,7 @@ public class RedAuto extends LinearOpMode {
                         bleft.setPower(0.0);
                         bright.setPower(0.0);
                     }
-                    if (!mecanumDrive.isBusy() && elapsed >= 5) {
+                    if (!mecanumDrive.isBusy() && elapsed >= 4) {
                         next(State.GO_TO_SHIPPING_HUB);
                     }
                     break;
@@ -229,6 +235,11 @@ public class RedAuto extends LinearOpMode {
                 case SCORE_ALLIANCE_FREIGHT:
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromAlliance);
+                        next(State.PICK_UP_TEAMMATE_ITEM);
+                    }
+                case PICK_UP_TEAMMATE_ITEM:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.followTrajectoryAsync(goToTeammateItemFromShippingHub);
                         next(State.IDLE);
                     }
 //                case TURN_AT_ALLIANCE_FREIGHT:
