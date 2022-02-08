@@ -89,8 +89,8 @@ public class MecanumDriveConstants {
 
     public static double MAX_VEL = 45.0;// 47.907;
     public static double MAX_ACCEL = 9;// 52.48180821614297;
-    public static double MAX_ANG_VEL = 50; // Math.toRadians(33.74084763191785);
-    public static double MAX_ANG_ACCEL = 50; //Math.toRadians(184.02607784577722);
+    public static double MAX_ANG_VEL = 25 * 1.20; // Math.toRadians(33.74084763191785);
+    public static double MAX_ANG_ACCEL = 25 * 1.20; //Math.toRadians(184.02607784577722);
 
     public static double encoderTicksToInches(double ticks) {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;

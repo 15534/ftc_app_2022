@@ -29,7 +29,7 @@ public class MainTeleOp extends LinearOpMode {
     DcMotorEx intakeSurgical, intakeExtension, outtake, motorExLeft, carousel;
     Servo intakePosition, outtakeServo, fr, br, fl, bl;
 
-    double mecDown = 0.89;
+    double mecDown = 0.92;
     double intakeUp = 0.15;
     double tankDown = 0.85;
 
@@ -415,7 +415,6 @@ public class MainTeleOp extends LinearOpMode {
             if (gamepad1.a&&a) {
                 scaler=Math.max(0.2, scaler-0.2);
                 a=false;
-
             }
             if(!gamepad1.a){
                 a=true;
@@ -446,8 +445,6 @@ public class MainTeleOp extends LinearOpMode {
             telemetry.update();
 
         }
-
-
 
         // dpad left - tier 1
         // dpad right - open outtake servo that contains freight
