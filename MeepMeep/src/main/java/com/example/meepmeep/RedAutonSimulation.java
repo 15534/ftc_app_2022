@@ -20,7 +20,7 @@ public class RedAutonSimulation {
     static Pose2d scoreAllianceFreight = new Pose2d(-22, -42.5, Math.toRadians(-90));
     static Pose2d teammateItem1 = new Pose2d(-28,-49, Math.toRadians(30));
     static Pose2d checkpt000 = new Pose2d(0 ,-46, Math.toRadians(66));
-    static Pose2d checkpt1 = new Pose2d(2,-41, Math.toRadians(55));
+//    static Pose2d checkpt1 = new Pose2d(2,-41, Math.toRadians(55));
     static Vector2d carouselPos = new Vector2d(-60, -56);
     static Vector2d checkpt0 = new Vector2d(-18,-50);
     static Vector2d checkpt00 = new Vector2d(-9,-50);
@@ -33,17 +33,17 @@ public class RedAutonSimulation {
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
 
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(40, 5.5, 0.8*Math.toRadians(180), 0.6*Math.toRadians(184.02607784577722), 5.5)
+                .setConstraints(45, 9, 25*1.2, 25*1.2, 5.5)
                 .followTrajectorySequence(drive ->
                                 drive.trajectorySequenceBuilder(startingPosition)
                                         .lineTo(carouselPos)
-                                        .splineToSplineHeading(shippingHubPose, Math.toRadians(0))
-                                        .splineToSplineHeading(allianceFreightPose, Math.toRadians(220))
-                                        .splineToSplineHeading(scoreAllianceFreight, Math.toRadians(90))
-                                        .splineToSplineHeading(teammateItem1, Math.toRadians(-50))
-                                        .splineToConstantHeading(checkpt0, Math.toRadians(0))
-                                        .splineToConstantHeading(checkpt00, Math.toRadians(0))
-                                        .splineToSplineHeading(checkpt000, Math.toRadians(0))
+                                        .splineToSplineHeading(shippingHubPose, Math.toRadians(80))
+//                                        .splineToLinearHeading(allianceFreightPose, Math.toRadians(220))
+//                                        .splineToSplineHeading(scoreAllianceFreight, Math.toRadians(90))
+//                                        .splineToSplineHeading(teammateItem1, Math.toRadians(-50))
+//                                        .splineToConstantHeading(checkpt0, Math.toRadians(0))
+//                                        .splineToConstantHeading(checkpt00, Math.toRadians(0))
+//                                        .splineToSplineHeading(checkpt000, Math.toRadians(0))
                                         //.splineToSplineHeading(checkpt1, Math.toRadians(0))
 //                                .lineTo(wareHousePos)
 //                                .turn(Math.toRadians(20))
