@@ -26,6 +26,7 @@ public class RedAuto extends LinearOpMode {
     public SampleTankDrive tankDrive;
 
     double time = 0.0;
+    double intakeUp = 0.15;
     ElapsedTime runtime = new ElapsedTime();
     State currentState = State.IDLE;
     LinearOpMode op;
@@ -38,9 +39,14 @@ public class RedAuto extends LinearOpMode {
 
     //Pose2d allianceFreightPose = new Pose2d(-12,-53, -Math.atan(8 / 16)); // account for drift!!
     Pose2d allianceFreightPose = new Pose2d(-17,-40, -Math.atan(8 / 16)); // account for drift!!
-
-    Pose2d scoreAllianceFreight = new Pose2d(-22, -22.5, Math.toRadians(-90));
+    Pose2d checkpt1 = new Pose2d(2,-41+20, Math.toRadians(55));
+    Pose2d scoreAllianceFreight = new Pose2d(-22, -24, Math.toRadians(-90));
     Pose2d teammateItem1 = new Pose2d(-28,-29, Math.toRadians(30));
+    Vector2d checkpt0 = new Vector2d(-18,-50+20);
+    Vector2d checkpt00 = new Vector2d(-9,-50+20);
+    Pose2d checkpt000 = new Pose2d(-3 ,-44+20, Math.toRadians(75));
+
+
 
     Vector2d storageUnitPose = new Vector2d(-48, -36);
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
@@ -48,7 +54,7 @@ public class RedAuto extends LinearOpMode {
 
     Trajectory goToTeammateItemFromShippingHub, goToShippingHubFromAlliance, goToCarouselFromStarting, goToShippingHubFromCarousel, goToAllianceFreightFromShippingHub, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
 
-    Servo fr, br, fl, bl, outtakeServo;
+    Servo fr, br, fl, bl, outtakeServo, intakePosition;
     public static int outtakeFirstLevelPosition = -120;
     public static double outtakePower = 0.5;
     public static double outtakeServoClosePosition = 0.9;
@@ -103,11 +109,15 @@ public class RedAuto extends LinearOpMode {
                 .build();
 
         goToShippingHubFromAlliance = mecanumDrive.trajectoryBuilder(goToAllianceFreightFromShippingHub.end(), Math.toRadians(90))
-                .splineToSplineHeading(scoreAllianceFreight, Math.toRadians(90))
+                .splineToSplineHeading(scoreAllianceFreight, Math.toRadians(-90))
                 .build();
 
         goToTeammateItemFromShippingHub = mecanumDrive.trajectoryBuilder(goToShippingHubFromAlliance.end())
-                .splineToSplineHeading(teammateItem1, Math.toRadians(90))
+                .splineToSplineHeading(teammateItem1, Math.toRadians(-90))
+                .splineToConstantHeading(checkpt0, Math.toRadians(0))
+                .splineToConstantHeading(checkpt00, Math.toRadians(0))
+                .splineToSplineHeading(checkpt000, Math.toRadians(0))
+                .splineToSplineHeading(checkpt1, Math.toRadians(0))
                 .build();
 
 //        goToFreightFromShippingHub = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
@@ -153,7 +163,7 @@ public class RedAuto extends LinearOpMode {
         outtake.setDirection(DcMotor.Direction.REVERSE);
         outtake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         outtakeServo = hardwareMap.get(Servo.class, "outtake servo");
-
+        intakePosition = hardwareMap.get(Servo.class, "intakeLift");
         fl = hardwareMap.get(Servo.class, "frontleft");
         // limits: 0.98 & 0
         br = hardwareMap.get(Servo.class, "backright");
@@ -171,9 +181,8 @@ public class RedAuto extends LinearOpMode {
 
         intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");        buildTrajectories();
         runtime.reset();
-
+        intakePosition.setPosition(intakeUp);
         waitForStart();
-
         mecanumDrive.setPoseEstimate(startingPosition);
         mecanumDrive.turnAsync(Math.toRadians(10));
         next(State.KNOCK_OFF_DUCK);
