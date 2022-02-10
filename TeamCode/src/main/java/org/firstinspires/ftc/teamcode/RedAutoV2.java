@@ -18,8 +18,8 @@ import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
 import java.util.Vector;
 
 @Config
-@Autonomous(name = "RedAuto")
-public class RedAuto extends LinearOpMode {
+@Autonomous(name = "RedAutoV2")
+public class RedAutoV2 extends LinearOpMode {
     DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright, outtake;
 
     public SampleMecanumDrive mecanumDrive;
@@ -35,16 +35,16 @@ public class RedAuto extends LinearOpMode {
     Vector2d carouselPos = new Vector2d(-60, -56);
     //Pose2d shippingHubPose = new Pose2d(-39,-25, Math.toRadians(226));
 
-    Pose2d shippingHubPose = new Pose2d(-24,-36.5, ((Math.PI) + Math.atan(11.5/13.5))); //220.43
+    Vector2d shippingHubPose = new Vector2d(-24,-36.5); //220.43
 
     //Pose2d allianceFreightPose = new Pose2d(-12,-53, -Math.atan(8 / 16)); // account for drift!!
-    Pose2d allianceFreightPose = new Pose2d(-17,-40, -Math.atan(8 / 16)); // account for drift!!
-//    Pose2d checkpt1 = new Pose2d(2,-41+20, Math.toRadians(55));
-    Pose2d scoreAllianceFreight = new Pose2d(-23.5, -22, Math.toRadians(-90));
-    Pose2d teammateItem1 = new Pose2d(-28,-29, Math.toRadians(30));
-    Vector2d checkpt0 = new Vector2d(-18,-50+20);
-    Vector2d checkpt00 = new Vector2d(-9,-50+20);
-    Pose2d checkpt000 = new Pose2d(-3 ,-41+20, Math.toRadians(65));
+    Vector2d allianceFreightPose = new Vector2d(-12,-53); // account for drift!!
+    //    Pose2d checkpt1 = new Pose2d(2,-41+20, Math.toRadians(55));
+    Vector2d scoreAllianceFreight = new Vector2d(-22, -42.5);
+    Pose2d teammateItem1 = new Pose2d(-28,-49, Math.toRadians(30));
+    Vector2d checkpt0 = new Vector2d(-18,-50);
+    Vector2d checkpt00 = new Vector2d(-9,-50);
+    Pose2d checkpt000 = new Pose2d(-3 ,-41, Math.toRadians(65));
 
     Vector2d storageUnitPose = new Vector2d(-48, -36);
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
@@ -63,8 +63,11 @@ public class RedAuto extends LinearOpMode {
         GO_TO_CAROUSEL,
         KNOCK_OFF_DUCK,
         GO_TO_SHIPPING_HUB,
+        GO_TO_SHIPPING_HUB_TURN,
         GO_TO_ALLIANCE_FREIGHT,
+        GO_TO_ALLIANCE_FREIGHT_TURN,
         SCORE_ALLIANCE_FREIGHT,
+        SCORE_ALLIANCE_FREIGHT_TURN,
         PICK_UP_TEAMMATE_ITEM_PART_1,
         PICK_UP_TEAMMATE_ITEM_PART_2,
         PICK_UP_TEAMMATE_ITEM_PART_3,
@@ -101,17 +104,17 @@ public class RedAuto extends LinearOpMode {
         goToShippingHubFromCarousel = mecanumDrive.trajectoryBuilder(goToCarouselFromStarting.end())
                 //.lineToSplineHeading(shippingHubPose)
                 //.lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
-                .splineToLinearHeading(shippingHubPose, Math.toRadians(80))
+                .lineTo(shippingHubPose)
                 .build();
 
         goToAllianceFreightFromShippingHub = mecanumDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
                 //.lineToSplineHeading(shippingHubPose)
                 //.lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
-                .splineToLinearHeading(allianceFreightPose, Math.toRadians(220))
+                .lineTo(allianceFreightPose)
                 .build();
 
         goToShippingHubFromAlliance = mecanumDrive.trajectoryBuilder(goToAllianceFreightFromShippingHub.end(), Math.toRadians(90))
-                .splineToSplineHeading(scoreAllianceFreight, Math.toRadians(90))
+                .lineTo(scoreAllianceFreight)
                 .build();
 
         goToTeammateItemFromShippingHubPart1 = mecanumDrive.trajectoryBuilder(goToShippingHubFromAlliance.end())
@@ -227,6 +230,12 @@ public class RedAuto extends LinearOpMode {
                     // path to go to shipping hub
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
+                        next(State.GO_TO_SHIPPING_HUB_TURN);
+                    }
+                    break;
+                case GO_TO_SHIPPING_HUB_TURN:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.turnAsync(((Math.PI) + Math.atan(11.5/13.5)));
                         next(State.GO_TO_ALLIANCE_FREIGHT);
                     }
                     break;
@@ -255,14 +264,27 @@ public class RedAuto extends LinearOpMode {
                 case GO_TO_ALLIANCE_FREIGHT:
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub);
+                        next(State.GO_TO_ALLIANCE_FREIGHT_TURN);
+                    }
+                    break;
+                case GO_TO_ALLIANCE_FREIGHT_TURN:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.turnAsync(-Math.atan(8.0/16.0));
                         next(State.SCORE_ALLIANCE_FREIGHT);
                     }
                     break;
                 case SCORE_ALLIANCE_FREIGHT:
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromAlliance);
-                        next(State.PICK_UP_TEAMMATE_ITEM_PART_4);
+                        next(State.SCORE_ALLIANCE_FREIGHT_TURN);
                     }
+                    break;
+                case SCORE_ALLIANCE_FREIGHT_TURN:
+                    if (!mecanumDrive.isBusy()) {
+                        mecanumDrive.turnAsync(Math.toRadians(-90));
+                        next(State.IDLE);
+                    }
+                    break;
 //                case PICK_UP_TEAMMATE_ITEM_PART_1:
 //                    if (!mecanumDrive.isBusy()) {
 //                        mecanumDrive.followTrajectoryAsync(goToTeammateItemFromShippingHubPart1);
@@ -291,7 +313,7 @@ public class RedAuto extends LinearOpMode {
 //                    if (!mecanumDrive.isBusy()) {
 //                        mecanumDrive.turnAsync();
 //                    }
-                    //                case TURN_AT_SHIPPING_HUB:
+                //                case TURN_AT_SHIPPING_HUB:
 //                    if (!mecanumDrive.isBusy()) {
 ////                        double dX = Math.abs(wareHousePos.getX() - shippingHubPose.getX());
 ////                        double dY = Math.abs(wareHousePos.getY() - shippingHubPose.getY());
