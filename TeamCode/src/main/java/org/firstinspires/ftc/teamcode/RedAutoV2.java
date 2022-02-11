@@ -50,7 +50,13 @@ public class RedAutoV2 extends LinearOpMode {
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
 
-    Trajectory goToShippingHubFromCarousel2, goToTeammateItemFromShippingHub, goToShippingHubFromAlliance, goToCarouselFromStarting, goToShippingHubFromCarousel, goToAllianceFreightFromShippingHub, goToTeammateItemFromShippingHubPart1, goToTeammateItemFromShippingHubPart2, goToTeammateItemFromShippingHubPart3, goToTeammateItemFromShippingHubPart4, goToFreightFromShippingHub, goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos;
+    Trajectory goToShippingHubFromCarousel2, goToTeammateItemFromShippingHub,
+            goToShippingHubFromAlliance, goToCarouselFromStarting, goToShippingHubFromCarousel,
+            goToAllianceFreightFromShippingHub, goToTeammateItemFromShippingHubPart1,
+            goToTeammateItemFromShippingHubPart2, goToTeammateItemFromShippingHubPart3,
+            goToTeammateItemFromShippingHubPart4, goToFreightFromShippingHub,
+            goToSwitchingPosFromFreight, goToStorageUnitFromSwitchingPos,
+            goToAllianceFreightFromShippingHub2;
 
     Servo fr, br, fl, bl, outtakeServo, intakePosition;
     public static int outtakeFirstLevelPosition = -120;
@@ -101,21 +107,29 @@ public class RedAutoV2 extends LinearOpMode {
     int turnsLeft = 3;
 
     public void buildTrajectories() {
-        goToCarouselFromStarting = mecanumDrive.trajectoryBuilder(startingPosition)
-                .lineTo(carouselPos)
-                .build();
+//        goToCarouselFromStarting = tankDrive.trajectoryBuilder(startingPosition)
+//                .back(4)
+//                .build();
 
-        goToShippingHubFromCarousel = mecanumDrive.trajectoryBuilder(goToCarouselFromStarting.end())
+        goToShippingHubFromCarousel = tankDrive.trajectoryBuilder(startingPosition)
                 //.lineToSplineHeading(shippingHubPose)
                 //.lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
                 .forward(27.586228)
                 .build();
 
-        goToShippingHubFromCarousel2 = mecanumDrive.trajectoryBuilder(goToShippingHubFromCarousel.end())
+        goToShippingHubFromCarousel2 = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel.end().plus(new Pose2d(0, 0, Math.toRadians(125))))
                 //.lineToSplineHeading(shippingHubPose)
                 //.lineTo(new Vector2d(shippingHubPose.getX(),shippingHubPose.getY()))
                 //.lineTo(new Vector2d(shippingHubPose.getX(), shippingHubPose.getY()))
-                .back(21.5)
+                .back(14)
+                .build();
+
+        goToAllianceFreightFromShippingHub = tankDrive.trajectoryBuilder(goToShippingHubFromCarousel2.end())
+                .forward(6)
+                .build();
+
+        goToAllianceFreightFromShippingHub2 = tankDrive.trajectoryBuilder(goToAllianceFreightFromShippingHub.end().plus(new Pose2d(0, 0, Math.toRadians(125))))
+                .forward(32)
                 .build();
     }
 
@@ -124,6 +138,7 @@ public class RedAutoV2 extends LinearOpMode {
         bl.setPosition(1);
         fr.setPosition(1);
         br.setPosition(0);
+        isMec = false;
     }
 
     public void switchFromTankToMec() {
@@ -131,6 +146,7 @@ public class RedAutoV2 extends LinearOpMode {
         fr.setPosition(0.1);
         br.setPosition(0.955);
         bl.setPosition(0.02);
+        isMec = true;
     }
 
     public void runOpMode() throws InterruptedException {
@@ -201,23 +217,23 @@ public class RedAutoV2 extends LinearOpMode {
                         bright.setPower(0.0);
                     }
                     if (!mecanumDrive.isBusy() && elapsed >= 3.5) {
+                        tankDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
                         next(State.GO_TO_SHIPPING_HUB);
                     }
                     break;
                 case GO_TO_SHIPPING_HUB:
                     // path to go to shipping hub
                     if (!tankDrive.isBusy()) {
-                        tankDrive.followTrajectoryAsync(goToShippingHubFromCarousel);
                         next(State.GO_TO_SHIPPING_HUB_TURN);
                     }
                     break;
                 case GO_TO_SHIPPING_HUB_TURN:
                     if (!tankDrive.isBusy()) {
                         switchFromTankToMec();
-                        isMec = true;
-                        mecanumDrive.turn(Math.toRadians(248 - 67));
+                        sleep(300);
+                        mecanumDrive.turn(Math.toRadians(125));
                         switchFromMecToTank();
-                        isMec = false;
+                        sleep(300);
                         next(State.GO_TO_SHIPPING_HUB_2);
                     }
                     break;
@@ -234,35 +250,37 @@ public class RedAutoV2 extends LinearOpMode {
                     break;
                 case SCORE_FREIGHT_IN_SHIPPING_HUB:
                     if (!tankDrive.isBusy()) {
-                        outtake.setTargetPosition(outtakeThirdLevelPosition);
-                        outtake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        outtake.setPower(outtakePower);
-                        telemetry.addData("outtake position: ", outtake.getCurrentPosition());
-
-                        if (elapsed > 2) {
+                        if (elapsed < 2) {
+                            outtake.setTargetPosition(outtakeThirdLevelPosition);
+                            outtake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            outtake.setPower(outtakePower);
+                            telemetry.addData("outtake position: ", outtake.getCurrentPosition());
+                        } else if (elapsed < 3) {
                             outtakeServo.setPosition(outtakeServoOpenPosition);
                             telemetry.addData("outtake servo position: ", outtakeServo.getPosition());
-                        }
-
-                        if (elapsed > 3) {
+                        } else if (elapsed < 4) {
                             outtakeServo.setPosition(outtakeServoClosePosition);
                             outtake.setTargetPosition(outtakeDownPosition);
+                        } else {
+                            tankDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub);
+                            next(State.GO_TO_ALLIANCE_FREIGHT);
                         }
-                        next(State.IDLE);
                     }
                     break;
                 case GO_TO_ALLIANCE_FREIGHT:
-                    if (!mecanumDrive.isBusy()) {
-                        mecanumDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub);
-                        next(State.GO_TO_ALLIANCE_FREIGHT_TURN);
+                    if (!tankDrive.isBusy()) {
+                        switchFromTankToMec();
+                        sleep(300);
+                        mecanumDrive.turn(Math.toRadians(125));
+                        switchFromMecToTank();
+                        sleep(300);
+                        tankDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub2);
+                        next(State.IDLE);
                     }
                     break;
-                case GO_TO_ALLIANCE_FREIGHT_TURN:
-                    if (!mecanumDrive.isBusy()) {
-                        mecanumDrive.turnAsync(-Math.atan(8.0/16.0));
-                        next(State.SCORE_ALLIANCE_FREIGHT);
-                    }
-                    break;
+//                case GO_TO_ALLIANCE_FREIGHT_2:
+//
+//                    break;
                 case SCORE_ALLIANCE_FREIGHT:
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromAlliance);
