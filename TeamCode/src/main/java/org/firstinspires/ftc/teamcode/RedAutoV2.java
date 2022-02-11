@@ -52,7 +52,7 @@ public class RedAutoV2 extends LinearOpMode {
     Pose2d wareHousePos = new Pose2d(48, -48, Math.toRadians(0));
     Vector2d switchingPos = new Vector2d(0, -48);
 
-    Trajectory goToShippingHubFromCarousel2, goToTeammateItemFromShippingHub,
+    Trajectory goToAllianceFreightFromShippingHub3, goToShippingHubFromCarousel2, goToTeammateItemFromShippingHub,
             goToShippingHubFromAlliance, goToCarouselFromStarting, goToShippingHubFromCarousel,
             goToAllianceFreightFromShippingHub, goToTeammateItemFromShippingHubPart1,
             goToTeammateItemFromShippingHubPart2, goToTeammateItemFromShippingHubPart3,
@@ -134,6 +134,10 @@ public class RedAutoV2 extends LinearOpMode {
         goToAllianceFreightFromShippingHub2 = tankDrive.trajectoryBuilder(goToAllianceFreightFromShippingHub.end().plus(new Pose2d(0, 0, Math.toRadians(125))))
                 .forward(32)
                 .build();
+
+        goToAllianceFreightFromShippingHub3 = tankDrive.trajectoryBuilder(goToAllianceFreightFromShippingHub2.end())
+                .back(6)
+                .build();
     }
 
     public void switchFromMecToTank() {
@@ -201,6 +205,7 @@ public class RedAutoV2 extends LinearOpMode {
         waitForStart();
         mecanumDrive.setPoseEstimate(startingPosition);
         mecanumDrive.turnAsync(Math.toRadians(10));
+
         next(State.INTAKE_ALLIANCE);
 
         while(opModeIsActive()) {
@@ -282,38 +287,37 @@ public class RedAutoV2 extends LinearOpMode {
                         switchFromMecToTank();
                         sleep(300);
                         tankDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub2);
-                        next(State.IDLE);
+                        next(State.INTAKE_ALLIANCE);
                     }
                     break;
               case INTAKE_ALLIANCE:
-                  if (!tankDrive.isBusy()){
-                      switchFromTankToMec();
-                      sleep(300);
-                      intakePosition.setPosition(mecDown);
-                      sleep(300);
-                      intakeSurgical.setPower(0.6);
+                    if (!tankDrive.isBusy()){
+                        switchFromTankToMec();
+                        sleep(300);
+                        intakePosition.setPosition(mecDown);
+                        sleep(300);
+                        intakeSurgical.setPower(0.6);
 
-                      intakeExtension.setTargetPosition(intakeExtension.getCurrentPosition()-140);
-                      intakeExtension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                      intakeExtension.setPower(0.2);
-                      sleep(1000);
-                      intakePosition.setPosition(intakeUp);
-                      intakeExtension.setTargetPosition(intakeExtension.getCurrentPosition()+140);
-                      intakeExtension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                      intakeExtension.setPower(0.2);
-                      sleep(1000);
-                      intakeSurgical.setPower(-0.6);
-                      sleep(1000);
-                      next(State.IDLE);
+                        intakeExtension.setTargetPosition(intakeExtension.getCurrentPosition()-140);
+                        intakeExtension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        intakeExtension.setPower(0.2);
+                        sleep(1000);
 
+                        intakePosition.setPosition(intakeUp);
+                        intakeExtension.setTargetPosition(intakeExtension.getCurrentPosition()+140);
+                        intakeExtension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        intakeExtension.setPower(0.2);
+                        sleep(1000);
 
-                  }
-//
+                        intakeSurgical.setPower(-0.6);
+                        sleep(1000);
+                        next(State.SCORE_ALLIANCE_FREIGHT);
+                    }
                     break;
                 case SCORE_ALLIANCE_FREIGHT:
-                    if (!mecanumDrive.isBusy()) {
-                        mecanumDrive.followTrajectoryAsync(goToShippingHubFromAlliance);
-                        next(State.SCORE_ALLIANCE_FREIGHT_TURN);
+                    if (!tankDrive.isBusy()) {
+                        tankDrive.followTrajectoryAsync(goToAllianceFreightFromShippingHub3);
+                        next(State.IDLE);
                     }
                     break;
                 case SCORE_ALLIANCE_FREIGHT_TURN:
