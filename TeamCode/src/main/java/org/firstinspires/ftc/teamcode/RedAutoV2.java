@@ -20,11 +20,13 @@ import java.util.Vector;
 @Config
 @Autonomous(name = "RedAutoV2")
 public class RedAutoV2 extends LinearOpMode {
-    DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright, outtake;
+    DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright, outtake, intakeSurgical;
 
     public SampleMecanumDrive mecanumDrive;
     public SampleTankDrive tankDrive;
+    double mecDown = 0.92;
 
+    double tankDown = 0.85;
     double time = 0.0;
     double intakeUp = 0.15;
     ElapsedTime runtime = new ElapsedTime();
@@ -96,6 +98,7 @@ public class RedAutoV2 extends LinearOpMode {
         GO_TO_SWITCHING_POS_2,
         DRIVE_TO_FREIGHT_2,
         PARK,
+        INTAKE_ALLIANCE,
         IDLE, GO_TO_SHIPPING_HUB_2, GO_TO_SHIPPING_HUB_TURN_2, TRANSITION_SCORE_FREIGHT_IN_SHIPPING_HUB,
     }
 
@@ -187,6 +190,10 @@ public class RedAutoV2 extends LinearOpMode {
         br.setPosition(0);
 
         intakeExtension = hardwareMap.get(DcMotorEx.class, "intakeExtension");
+        intakeSurgical = hardwareMap.get(DcMotorEx.class, "intakeSurgical");
+        intakeSurgical.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        intakeSurgical.setDirection(DcMotor.Direction.FORWARD);
+        intakeSurgical.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         buildTrajectories();
 
         runtime.reset();
@@ -194,7 +201,7 @@ public class RedAutoV2 extends LinearOpMode {
         waitForStart();
         mecanumDrive.setPoseEstimate(startingPosition);
         mecanumDrive.turnAsync(Math.toRadians(10));
-        next(State.KNOCK_OFF_DUCK);
+        next(State.INTAKE_ALLIANCE);
 
         while(opModeIsActive()) {
             intakeExtension.setPower(0.2);
@@ -278,9 +285,31 @@ public class RedAutoV2 extends LinearOpMode {
                         next(State.IDLE);
                     }
                     break;
-//                case GO_TO_ALLIANCE_FREIGHT_2:
+              case INTAKE_ALLIANCE:
+                  if (!tankDrive.isBusy()){
+                      switchFromTankToMec();
+                      sleep(300);
+                      intakePosition.setPosition(mecDown);
+                      sleep(300);
+                      intakeSurgical.setPower(0.6);
+
+                      intakeExtension.setTargetPosition(intakeExtension.getCurrentPosition()-140);
+                      intakeExtension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                      intakeExtension.setPower(0.2);
+                      sleep(1000);
+                      intakePosition.setPosition(intakeUp);
+                      intakeExtension.setTargetPosition(intakeExtension.getCurrentPosition()+140);
+                      intakeExtension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                      intakeExtension.setPower(0.2);
+                      sleep(1000);
+                      intakeSurgical.setPower(-0.6);
+                      sleep(1000);
+                      next(State.IDLE);
+
+
+                  }
 //
-//                    break;
+                    break;
                 case SCORE_ALLIANCE_FREIGHT:
                     if (!mecanumDrive.isBusy()) {
                         mecanumDrive.followTrajectoryAsync(goToShippingHubFromAlliance);
