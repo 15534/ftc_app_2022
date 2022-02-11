@@ -15,15 +15,17 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 @Config
 public class CVPipeline extends OpenCvPipeline {
+    //red
     public static final Point REGION1_A = new Point(205, 40);
     public static final Point REGION1_B = new Point(215, 50);
 
-    public static final Point REGION2_A = new Point(220, 100);
+    //blue
+    public static final Point REGION2_A = new Point(215, 90);
     public static final Point REGION2_B = new Point(230, 110);
 
-    public static final Point REGION3_A = new Point(245, 180);
-    public static final Point REGION3_B = new Point(255, 190);
-
+    //green
+    public static final Point REGION3_A = new Point(240, 160);
+    public static final Point REGION3_B = new Point(260, 180);
 
     Mat region1_Cb, region2_Cb, region3_Cb;
     Mat YCrCb = new Mat();
