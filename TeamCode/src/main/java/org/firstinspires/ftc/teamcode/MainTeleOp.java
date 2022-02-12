@@ -37,7 +37,7 @@ public class MainTeleOp extends LinearOpMode {
     public static int outtakeFirstLevelPosition = -120;
     public static int outtakeDownPosition = 0;
     public static double outtakePower = 0.5;
-    public static double outtakeServoClosePosition = 0.86;
+    public static double outtakeServoClosePosition = 0.6;
     public static double outtakeServoOpenPosition = 0.4;
 
     public static double intakeExtensionLowerLimit = -30;
@@ -81,6 +81,8 @@ public class MainTeleOp extends LinearOpMode {
 
         motorExLeft = (DcMotorEx)hardwareMap.get(DcMotor.class, "intake");
         outtakeServo = hardwareMap.get(Servo.class, "outtake servo");
+        outtakeServo.setDirection(Servo.Direction.REVERSE);
+
 
         intakeSurgical = hardwareMap.get(DcMotorEx.class, "intakeSurgical");
         intakeSurgical.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -119,7 +121,7 @@ public class MainTeleOp extends LinearOpMode {
         fl.setPosition(0.984);
         fr.setPosition(0.1);
         br.setPosition(0.955);
-        bl.setPosition(0.02);
+        bl.setPosition(0.03);
 
         boolean a = true;
         boolean b = true;
@@ -402,7 +404,7 @@ public class MainTeleOp extends LinearOpMode {
                     fl.setPosition(0.984);
                     fr.setPosition(.1);
                     br.setPosition(0.955);
-                    bl.setPosition(0.02);
+                    bl.setPosition(0.03);
                     isMec=true;
 
                 }
