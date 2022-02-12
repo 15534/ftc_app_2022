@@ -25,7 +25,7 @@ public class CameraTest extends LinearOpMode {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
-        pipeline = new CVPipeline();
+        pipeline = new CVPipeline(false);
         webcam.setPipeline(pipeline);
         webcam.setMillisecondsPermissionTimeout(2500);
 
@@ -76,6 +76,7 @@ public class CameraTest extends LinearOpMode {
             telemetry.addData("avg1 - red", pipeline.getAvg1());
             telemetry.addData("avg2 - blue", pipeline.getAvg2());
             telemetry.addData("avg3 - green", pipeline.getAvg3());
+            telemetry.addData("position", pipeline.getPosition());
             telemetry.update();
         }
     }

@@ -15,23 +15,43 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 @Config
 public class CVPipeline extends OpenCvPipeline {
+
+    public boolean isRed = false;
+
     //red
-    public static final Point REGION1_A = new Point(205, 40);
-    public static final Point REGION1_B = new Point(215, 50);
+    public static final Point RED_REGION1_A = new Point(205, 40);
+    public static final Point RED_REGION1_B = new Point(215, 50);
 
     //blue
-    public static final Point REGION2_A = new Point(215, 90);
-    public static final Point REGION2_B = new Point(230, 110);
+    public static final Point RED_REGION2_A = new Point(215, 90);
+    public static final Point RED_REGION2_B = new Point(230, 110);
 
     //green
-    public static final Point REGION3_A = new Point(240, 160);
-    public static final Point REGION3_B = new Point(260, 180);
+    public static final Point RED_REGION3_A = new Point(240, 160);
+    public static final Point RED_REGION3_B = new Point(260, 180);
+
+    //red
+    public static final Point BLUE_REGION1_A = new Point(205, 40);
+    public static final Point BLUE_REGION1_B = new Point(215, 50);
+
+    //blue
+    public static final Point BLUE_REGION2_A = new Point(215, 90);
+    public static final Point BLUE_REGION2_B = new Point(230, 110);
+
+    //green
+    public static final Point BLUE_REGION3_A = new Point(240, 160);
+    public static final Point BLUE_REGION3_B = new Point(260, 180);
 
     Mat region1_Cb, region2_Cb, region3_Cb;
     Mat YCrCb = new Mat();
     Mat Cb = new Mat();
     private volatile int avg1, avg2, avg3;
-    private volatile int position = 0;  // 0 - left, 1 - middle, 2 - right
+    private volatile int position = 1; // 1 - bottom, 2 - middle, 3 - top
+
+    public CVPipeline(boolean isRed) {
+        super();
+        this.isRed = isRed;
+    }
 
     void inputToCb(Mat input) {
         Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
@@ -56,9 +76,16 @@ public class CVPipeline extends OpenCvPipeline {
          * buffer. Any changes to the child affect the parent, and the
          * reverse also holds true.
          */
-        region1_Cb = Cb.submat(new Rect(REGION1_A, REGION1_B));
-        region2_Cb = Cb.submat(new Rect(REGION2_A, REGION2_B));
-        region3_Cb = Cb.submat(new Rect(REGION3_A, REGION3_B));
+        if (isRed) {
+            region1_Cb = Cb.submat(new Rect(RED_REGION1_A, RED_REGION1_B));
+            region2_Cb = Cb.submat(new Rect(RED_REGION2_A, RED_REGION2_B));
+            region3_Cb = Cb.submat(new Rect(RED_REGION3_A, RED_REGION3_B));
+        } else {
+            region1_Cb = Cb.submat(new Rect(BLUE_REGION1_A, BLUE_REGION1_B));
+            region2_Cb = Cb.submat(new Rect(BLUE_REGION2_A, BLUE_REGION2_B));
+            region3_Cb = Cb.submat(new Rect(BLUE_REGION3_A, BLUE_REGION3_B));
+        }
+
     }
 
     @Override
@@ -118,55 +145,76 @@ public class CVPipeline extends OpenCvPipeline {
         final Scalar BLUE = new Scalar(0, 0, 255);
         final Scalar GREEN = new Scalar(0, 255, 0);
 
-        /*
-         * Draw a rectangle showing sample region 1 on the screen.
-         * Simply a visual aid. Serves no functional purpose.
-         */
-        Imgproc.rectangle(
-                input, // Buffer to draw on
-                REGION1_A, // First point which defines the rectangle
-                REGION1_B, // Second point which defines the rectangle
-                RED, // The color the rectangle is drawn in
-                2); // Thickness of the rectangle lines
+        if(isRed) {
+            /*
+             * Draw a rectangle showing sample region 1 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    RED_REGION1_A, // First point which defines the rectangle
+                    RED_REGION1_B, // Second point which defines the rectangle
+                    RED, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
 
-        /*
-         * Draw a rectangle showing sample region 2 on the screen.
-         * Simply a visual aid. Serves no functional purpose.
-         */
-        Imgproc.rectangle(
-                input, // Buffer to draw on
-                REGION2_A, // First point which defines the rectangle
-                REGION2_B, // Second point which defines the rectangle
-                BLUE, // The color the rectangle is drawn in
-                2); // Thickness of the rectangle lines
+            /*
+             * Draw a rectangle showing sample region 2 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    RED_REGION2_A, // First point which defines the rectangle
+                    RED_REGION2_B, // Second point which defines the rectangle
+                    BLUE, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
 
-        Imgproc.rectangle(
-                input, // Buffer to draw on
-                REGION3_A, // First point which defines the rectangle
-                REGION3_B, // Second point which defines the rectangle
-                GREEN, // The color the rectangle is drawn in
-                2); // Thickness of the rectangle lines
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    RED_REGION3_A, // First point which defines the rectangle
+                    RED_REGION3_B, // Second point which defines the rectangle
+                    GREEN, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+        } else {
+            /*
+             * Draw a rectangle showing sample region 1 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    BLUE_REGION1_A, // First point which defines the rectangle
+                    BLUE_REGION1_B, // Second point which defines the rectangle
+                    RED, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
 
-//
-//        if (avg1 < REG1_CUTOFF) {
-//            stack = 4;
-////                Imgproc.rectangle(
-////                        input, // Buffer to draw on
-////                        REGION1_A, // First point which defines the rectangle
-////                        REGION1_B, // Second point which defines the rectangle
-////                        GREEN, // The color the rectangle is drawn in
-////                        -1);
-//        } else if (avg2 < REG2_CUTOFF) {
-//            stack = 1;
-////                Imgproc.rectangle(
-////                        input, // Buffer to draw on
-////                        REGION2_A, // First point which defines the rectangle
-////                        REGION2_B, // Second point which defines the rectangle
-////                        GREEN, // The color the rectangle is drawn in
-////                        -1);
-//        } else {
-//            stack = 0;
-//        }
+            /*
+             * Draw a rectangle showing sample region 2 on the screen.
+             * Simply a visual aid. Serves no functional purpose.
+             */
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    BLUE_REGION2_A, // First point which defines the rectangle
+                    BLUE_REGION2_B, // Second point which defines the rectangle
+                    BLUE, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+
+            Imgproc.rectangle(
+                    input, // Buffer to draw on
+                    BLUE_REGION3_A, // First point which defines the rectangle
+                    BLUE_REGION3_B, // Second point which defines the rectangle
+                    GREEN, // The color the rectangle is drawn in
+                    2); // Thickness of the rectangle lines
+        }
+
+
+
+        int minAvg = Math.min(avg1, Math.min(avg2, avg3));
+        if (minAvg == avg1) {
+            position = 1;
+        } else if (minAvg == avg2) {
+            position = 2;
+        } else if (minAvg == avg3) {
+            position = 3;
+        }
 
         /*
          * Render the 'input' buffer to the viewport. But note this is not

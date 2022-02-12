@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.ServoConstants.outtakeFirstLevelPosition;
+import static org.firstinspires.ftc.teamcode.ServoConstants.outtakeSecondLevelPosition;
+import static org.firstinspires.ftc.teamcode.ServoConstants.outtakeThirdLevelPosition;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -10,16 +14,25 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.PoseStorage;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.SampleTankDrive;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Vector;
 
 @Config
 @Autonomous(name = "RedAutoV2")
 public class RedAutoV2 extends LinearOpMode {
+    OpenCvWebcam webcam;
+    CVPipeline pipeline;
+
     DcMotorEx intakeExtension, carousel, fleft, fright, bleft, bright, outtake, intakeSurgical;
 
     public SampleMecanumDrive mecanumDrive;
@@ -29,6 +42,7 @@ public class RedAutoV2 extends LinearOpMode {
     double tankDown = 0.85;
     double time = 0.0;
     double intakeUp = 0.15;
+    int position = 1;
     ElapsedTime runtime = new ElapsedTime();
     State currentState = State.IDLE;
     LinearOpMode op;
@@ -61,8 +75,6 @@ public class RedAutoV2 extends LinearOpMode {
             goToAllianceFreightFromShippingHub2, shippingHubAll1, shippingHubAll2, park1, park2;
 
     Servo fr, br, fl, bl, outtakeServo, intakePosition;
-    public static int outtakeFirstLevelPosition = -120;
-    public static int outtakeThirdLevelPosition = -360;
 
     public static double outtakePower = 0.5;
     public static double outtakeServoClosePosition = 0.6;
@@ -171,6 +183,25 @@ public class RedAutoV2 extends LinearOpMode {
     }
 
     public void runOpMode() throws InterruptedException {
+
+
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
+        pipeline = new CVPipeline(false);
+        webcam.setPipeline(pipeline);
+        webcam.setMillisecondsPermissionTimeout(2500);
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {}
+        });
+
         mecanumDrive = new SampleMecanumDrive(hardwareMap);
         mecanumDrive.setPoseEstimate(startingPosition);
         tankDrive  = new SampleTankDrive(hardwareMap);
@@ -218,8 +249,18 @@ public class RedAutoV2 extends LinearOpMode {
         runtime.reset();
         intakePosition.setPosition(intakeUp);
 
+        while (!opModeIsActive() && !isStopRequested()) {
+            telemetry.addData("avg1 - red", pipeline.getAvg1());
+            telemetry.addData("avg2 - blue", pipeline.getAvg2());
+            telemetry.addData("avg3 - green", pipeline.getAvg3());
+            telemetry.addData("position", pipeline.getPosition());
+            telemetry.update();
+
+            position = pipeline.getPosition();
+            mecanumDrive.setPoseEstimate(startingPosition);
+        }
+
         waitForStart();
-        mecanumDrive.setPoseEstimate(startingPosition);
         mecanumDrive.turnAsync(Math.toRadians(10));
         next(State.KNOCK_OFF_DUCK);
 //        next(State.INTAKE_ALLIANCE);
@@ -272,7 +313,13 @@ public class RedAutoV2 extends LinearOpMode {
                 case GO_TO_SHIPPING_HUB_2:
                     if (!tankDrive.isBusy()) {
                         tankDrive.followTrajectoryAsync(goToShippingHubFromCarousel2);
-                        outtake.setTargetPosition(outtakeThirdLevelPosition);
+                        if (position == 1) {
+                            outtake.setTargetPosition(outtakeFirstLevelPosition);
+                        } else if (position == 2) {
+                            outtake.setTargetPosition(outtakeSecondLevelPosition);
+                        } else {
+                            outtake.setTargetPosition(outtakeThirdLevelPosition);
+                        }
                         outtake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         outtake.setPower(outtakePower);
                         next(State.TRANSITION_SCORE_FREIGHT_IN_SHIPPING_HUB);
@@ -344,7 +391,13 @@ public class RedAutoV2 extends LinearOpMode {
                         mecanumDrive.turn(Math.toRadians(-45));
                         switchFromMecToTank();
                         sleep(200);;
-                        outtake.setTargetPosition(outtakeThirdLevelPosition);
+                        if (position == 1) {
+                            outtake.setTargetPosition(outtakeFirstLevelPosition);
+                        } else if (position == 2) {
+                            outtake.setTargetPosition(outtakeSecondLevelPosition);
+                        } else {
+                            outtake.setTargetPosition(outtakeThirdLevelPosition);
+                        }
                         outtake.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         outtake.setPower(outtakePower);
                         tankDrive.followTrajectoryAsync(shippingHubAll2);
